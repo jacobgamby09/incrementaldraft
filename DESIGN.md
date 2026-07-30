@@ -165,16 +165,92 @@ stat-profil passer slot'ens vægte — uafhængigt af hvor god han er**
 
 ## Kampmodellen
 
-- 11 spilleres stats aggregeres til **Angreb / Midtbane / Forsvar**,
-  modificeret af formation, synergier og traits.
-- Kampe afvikles på ~10 sekunder: scoreline, målscorere, evt. momentum-bjælke.
-- Ingen interaktion under kampe. Skader sker og vises som drama
-  ("Jensen ude resten af sæsonen") — de gør næste opstilling til et nyt
-  puslespil, de kræver ikke handling nu.
-- **Traits er combo-laget**: *Målscorer* (kræver *Playmaker* for fuld effekt),
-  *Anfører* (+kemi til unge), *Tovejsmaskine* (tæller dobbelt),
-  *Glaskrop* (topstats, skades ofte — fristelsen). Stats vinder kampe,
-  traits skaber draft-glæden.
+Fodbold er lavscorende, og lavscorende spil har naturligt høj varians —
+favoritten vinder kun 50-60% i virkeligheden. Modellen udnytter det:
+**vi simulerer chancer, ikke resultater.** Det bedste hold har de bedste
+chancer; garantier findes ikke. Holdtallene (Angreb/Midtbane/Forsvar) er
+summen af de 11 spilleres vægtede bidrag inkl. synergier og traits.
+
+### Tre dueller, der mapper 1:1 til holdtallene
+
+1. **Midtbaneduellen skaber chancerne.** Kampen har en chance-pulje
+   (8-12, tilfældig). Hver chance tildeles et hold efter:
+   `andel = MID_dig^p_mid / (MID_dig^p_mid + MID_opp^p_mid)`,
+   clampet til **[30%, 70%]**.
+2. **Angreb mod forsvar afgør hver chance:**
+   `P(mål) = K × ANG^p_konv / (ANG^p_konv + FOR^p_konv)`
+3. **Terningen ruller per chance.** Mål er binomial-udfald — variansen er
+   den ærlige konsekvens af få, usikre chancer. Ingen skjult dagsform,
+   momentum eller held-modifier; hver overraskelse kan spores til chancer,
+   der blev misset eller konverteret.
+
+Modellen er **skala-fri** (kun forhold betyder noget: 240/210 regner som
+24/21) — den virker uændret fra division 5 til superligaerne.
+
+### Balance-reglen: p_mid = p_konv / 2
+
+MID tæller dobbelt (chancefordelingen er nulsum: flere chancer til dig =
+færre til dem), så midtbaneduellen får halv eksponent — det giver
+first-order paritet mellem de tre stats. Clampen sætter desuden et hårdt
+loft på MID-stacking (forbi 70% er MID-point værd nul) og garanterer
+underdoggen ~30% af chancerne.
+
+Konkave kurver gør resten: dominerer du midten, er næste MID-point næsten
+værdiløst og ANG det bedste køb — det bedste draft-køb afhænger af trup og
+kontekst, monokultur er matematisk irrationel. Formationer bliver
+spillestile, ikke power-rankings: 4-5-1 = volumen/lav varians, 4-3-3 =
+effektivitet/høj varians. (Som favorit vil du have lav varians, som
+underdog høj.)
+
+### Kalibrerede værdier (Monte Carlo, `simulation/match_sim.py`)
+
+**K=0,5 · p_konv=2,0 · p_mid=1,0 · chancepulje 8-12 · clamp 30-70%**
+
+Målt over 20-50k kampe per celle (seed 42):
+
+| Scenario           | Sejr | Uafgjort | Tab | Mål/kamp | Margin ≥4 |
+|--------------------|------|----------|-----|----------|-----------|
+| Jævnbyrdig         | 37%  | 26%      | 36% | 2,50     | 2,6%      |
+| +10% favorit       | 46%  | 25%      | 29% | 2,51     | 2,9%      |
+| +20% favorit       | 54%  | 24%      | 22% | 2,53     | 4,0%      |
+| +50% favorit       | 73%  | 17%      | 10% | 2,70     | 10,1%     |
+
+- Stat-paritet bestået: +20 point i hhv. ANG/MID/FOR giver +2,5/+2,6/+2,2
+  pp sejrsrate — ingen stat dominerer draften.
+- Typiske resultater: 1-1, 1-0, 2-1 hyppigst; 0-0 i ~6% — realistisk
+  fodbold uden håndkodede resultattabeller.
+- Genkalibrering ved regelændringer: kør harnesset igen, tjek targets
+  (jævnbyrdig ~37/26/37, +20% ≈ 52-58% sejr, paritet inden for ~1 pp).
+
+### Målscorere
+
+Hvert mål tildeles en spiller vægtet efter ANG-bidrag i opstillingen
+(+ekstra vægt til *Målscorer*-traiten). Giver "hvem scorer"-displayet,
+guld-dryppet per mål, topscorer-statistik — og gør draft-valg til navne,
+man ser score.
+
+### Diagnose (designprincip 4, håndhævet)
+
+| Symptom               | Diagnose                       | Næste træk        |
+|-----------------------|--------------------------------|-------------------|
+| Få chancer skabt      | Tabte midtbanen                | Draft/køb MID     |
+| Chancer, men få mål   | Deres forsvar slog dit angreb  | ANG / Playmaker   |
+| Mange mål imod        | Dit forsvar lækker             | FOR               |
+
+Sæson-skærmen auto-genererer én sætning per tendens ("I blev udspillet på
+midtbanen i 9 af 14 kampe").
+
+### De 10 sekunder: simulér øjeblikkeligt, afspil som drama
+
+Kampen afgøres på et millisekund; de 10 sekunder er iscenesættelse.
+Hurtig minut-ticker, kun nøgle-events: "23' — CHANCE! Holm… FORBI" /
+"41' — MÅÅÅL! Holm". **Missede chancer skal vises** — de gør variansen
+følt i stedet for mistænkelig ("vi skabte nok, vi var uskarpe" kan ses
+med egne øjne). Mål plinger guld ind live.
+
+Ingen interaktion under kampe. Skader vises som drama ("Jensen ude resten
+af sæsonen") — de gør næste opstilling til et nyt puslespil, de kræver
+ikke handling nu.
 
 ## Draften (de unge — fremtiden)
 
@@ -320,4 +396,5 @@ evigt; intet skal opfindes.
 - Datacentral (se AI-klubbers draft-behov) som sen scouting-node
 - Picks som omsættelig valuta (byt/sælg draft-rettigheder)
 - Streak-/underdog-bonusser i guld-økonomien
+- Hjemmebanefordel (+5-8% chanceandel — binder til stadion-økonomien)
 - Pyramidens præcise struktur og rating-skalering per division
