@@ -254,18 +254,87 @@ ikke handling nu.
 
 ## Draften (de unge — fremtiden)
 
-- Hver sæson genereres en årgang (fx 15-30 spillere) i talentregisteret.
+### Grundbeslutning: fælles pulje, privat viden
+
+Alle klubber drafter fra **samme årgang** (klassisk amerikansk draft).
+Begrundelse — nedskrevet så debatten ikke genåbnes uden grund:
+
+- Transfervinduet ER allerede spillets private pulje; en privat draft-pulje
+  ville være butik nummer to og udviske draftens identitet
+- Draft-rækkefølge som catch-up, tanking, pick-handel og guldårgange som
+  verdens-events kræver alle en objektiv, delt årgang
+- "Overlever han til mit pick?" — draftens bedste følelse kræver rivaler
+- **Den private pulje opstår alligevel — som information**: årgangen er
+  delt, men den del du kan se klart, er formet af dit scouting-arbejde.
+  Scouting genererer ikke puljen; den genererer dit udsyn over den.
+  (Ungdomsakademiet bliver senere den ægte private pulje.)
+
+### Årgangen (1.0)
+
+- **24 spillere** per årgang (8 klubber × 3 runder — alle draftes, ingen rest)
+- **Positions-garanti**: min. 2 GK / 7 forsvar / 7 midtbane / 5 angreb
+- Alder 16-19; OVR ved draft 25-40 (division 5-skala)
+- **Potentiale-fordeling** (normal årgang): 50% Pot 40-55 (fyld),
+  30% Pot 55-70 (solide), 15% Pot 70-85 (profiler), 5% Pot 85+
+  (juvelen — 1-2 per årgang)
+- **Årgangs-kvalitet annonceret én sæson forud**: Svag / Normal / Stærk /
+  Gylden (forskyder vægtene; gylden ≈ 3× profiler og juveler).
+  Strategisk tab for bedre picks er en legitim spillestil.
 - **Picks efter omvendt ligaplacering** — bundhold vælger først. Oprykning
-  til svær liga giver automatisk bedre picks: væggen finansierer sin løsning.
-- **AI-klubber drafter imellem dine picks** med egne behov — "overlever min
-  målmand til runde 2?" er gratis drama.
-- Draftees er unge, gratis (pick-baserede), usikre og med vækst foran sig.
-- Årgange varierer i kvalitet, annonceret på forhånd ("gylden årgang næste
-  år") — strategisk tab for bedre picks er en legitim spillestil.
-- **Scouting-tågen**: uscoutede spillere viser intervaller
-  ("CM, 17 år, ★★–★★★★, traits skjult"). Scouting-opgraderinger indsnævrer
-  intervallerne, afslører traits og til sidst potentiale-kurver. RNG'en
-  forsvinder aldrig — man får bare mere af den at se.
+  giver automatisk topvalg: væggen finansierer sin egen løsning.
+
+### Offentlig rangliste vs. privat scouting (kernefærdigheden)
+
+Årgangen præsenteres med en **offentlig ekspert-rangliste** ("mediernes
+board"): sorteret efter nuværende OVR plus støj, **blind for potentiale og
+traits**. AI-klubberne drafter efter boardet.
+
+Spillerens forspring er **scout-rapporter** (6 per sæson i basis; +2 per
+scouting-node, op til ~14): fra årgangen offentliggøres (midt i sæsonen,
+samtidig med transfervinduet) kan rapporter bruges frit — én rapport =
+spillerens intervaller snævres kraftigt ind, potentiale-estimat og trait
+afsløres. **Scout-fokus**: vælg en positionsgruppe; rapporter på den
+koster det halve.
+
+Kernefærdigheden i én sætning: *mediet ser hvem der er god nu — du ser
+hvem der bliver god.* Juvelen (OVR 27 / Pot 88) står som nr. 19 på
+boardet; har du scoutet ham, falder han til dit 2.-pick. Det øjeblik er
+systemets payoff, og det opstår mekanisk af forskellen mellem offentlig
+og privat information.
+
+### AI-klubbernes draft-logik
+
+Bevidst simpel: `score = offentlig rangering + positionsbehov + støj`.
+AI'en kender ikke potentiale — den bruger samme board som offentligheden.
+(Senere krydderi: enkelte klubber med "godt akademi"-flag får svag
+potentiale-snusen.) Naturlige reaches og steals uden klog AI.
+
+### Draft-dagen (skærmen, 3-5 minutter)
+
+Placering i loopet: efter Høst og talent tree/salg, **før** næste sæsons
+opstilling — rookies er med i puslespillet med det samme.
+
+1. **Rækkefølge-båndet** (top): alle 24 picks som strimmel, dine markeret;
+   "3 picks til din tur". AI-picks afvikles på ~1,5 sek. med animation
+   ("Northbridge FC vælger… CB Anders Holt")
+2. **Boardet** (midten): 24 kort, sortérbart (offentlig rang / position /
+   din scouting). Scoutede kort skarpe, uscoutede i tåge-intervaller;
+   draftede gråtones med klub-logo
+3. **Behovspanelet** (side): egen trup per position med alder
+   ("2 CM, ældst 33") — behovet synligt dér, hvor valget træffes
+
+Ingen timer — spillet venter på dig. Rookies lander på lav OVR og er
+projekter, som XP-systemet (spilletid, Mentor) skal forløse: draften
+fodrer direkte "vind nu vs. udvikl"-dilemmaet.
+
+### Udenfor 1.0 (prioriteret)
+
+1. Pick-handel med AI (byt ned + guld / køb dig op)
+2. Draft-kalenderen (se 2-3 årgange frem)
+3. Prøvetræningen (fuld afsløring af én spiller på draft-dagen)
+4. Kompensations-picks ved stjernesalg
+5. Stab i årgange (sjældne draftbare trænere/fysioer), live-tilbud på
+   draft-dagen
 
 ## Transfervinduet (de færdige — nu'et)
 
@@ -394,7 +463,9 @@ evigt; intet skal opfindes.
 - To valutaer, hvis hamstring dominerer
 - Skader: frekvens og dybde (v1: sjældne, rent narrative)
 - Datacentral (se AI-klubbers draft-behov) som sen scouting-node
-- Picks som omsættelig valuta (byt/sælg draft-rettigheder)
+- Antal scout-rapporter (6 af 24?) — følelses-parameter: man skal kunne se
+  ~25-40% af årgangen klart. For lidt = gætværk, for meget = indkøbsliste.
+  Skal findes i playtest
 - Streak-/underdog-bonusser i guld-økonomien
 - Hjemmebanefordel (+5-8% chanceandel — binder til stadion-økonomien)
 - Pyramidens præcise struktur og rating-skalering per division
