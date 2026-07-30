@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="da" data-theme="matchday">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynastiet — Formations-mockup (3 retninger)</title>
+<style>
+  /* ============ TOKENS (skiftes per tema) ============ */
+  :root, [data-theme="matchday"] {
+    --bg: radial-gradient(1200px 800px at 50% -10%, #12203a 0%, #0b1220 55%, #070b14 100%);
+    --panel: rgba(255,255,255,.045);
+    --panel-border: rgba(255,255,255,.09);
+    --panel-blur: blur(10px);
+    --text: #e8eef7;
+    --text-dim: #93a1b8;
+    --accent: #a3e635;
+    --accent-soft: rgba(163,230,53,.15);
+    --danger: #f87171;
+    --gold: #fbbf24;
+    --pitch-a: #14532d; --pitch-b: #166534;
+    --pitch-line: rgba(255,255,255,.28);
+    --card-bg: linear-gradient(180deg, rgba(30,41,59,.92), rgba(15,23,42,.94));
+    --card-border: rgba(255,255,255,.14);
+    --card-shadow: 0 6px 18px rgba(0,0,0,.45);
+    --card-radius: 12px;
+    --font-display: "Segoe UI", system-ui, sans-serif;
+    --font-num: "Segoe UI", system-ui, sans-serif;
+    --num-weight: 800;
+    --line-glow: drop-shadow(0 0 6px rgba(163,230,53,.8));
+    --line-glow-bad: drop-shadow(0 0 6px rgba(248,113,113,.8));
+    --star: #fbbf24;
+    --chip-gk:#818cf8; --chip-df:#38bdf8; --chip-mf:#4ade80; --chip-fw:#fb923c;
+  }
+  [data-theme="panini"] {
+    --bg: repeating-linear-gradient(0deg,#f6efdd 0 3px,#f2ebd7 3px 6px);
+    --panel: #fffdf6;
+    --panel-border: #d9cfb4;
+    --panel-blur: none;
+    --text: #3d3628;
+    --text-dim: #8a7f68;
+    --accent: #1c7c46;
+    --accent-soft: rgba(28,124,70,.12);
+    --danger: #c0392b;
+    --gold: #b8860b;
+    --pitch-a: #7fb069; --pitch-b: #77a862;
+    --pitch-line: rgba(255,253,240,.75);
+    --card-bg: #fffef8;
+    --card-border: #ffffff;
+    --card-shadow: 2px 3px 0 rgba(61,54,40,.25);
+    --card-radius: 6px;
+    --font-display: Georgia, "Times New Roman", serif;
+    --font-num: Georgia, serif;
+    --num-weight: 700;
+    --line-glow: none;
+    --line-glow-bad: none;
+    --star: #b8860b;
+    --chip-gk:#7d6bbe; --chip-df:#3e7cb1; --chip-mf:#4a8f4d; --chip-fw:#c96a2b;
+  }
+  [data-theme="taktik"] {
+    --bg: #f8fafc;
+    --panel: #ffffff;
+    --panel-border: #d5dce6;
+    --panel-blur: none;
+    --text: #0f172a;
+    --text-dim: #64748b;
+    --accent: #2563eb;
+    --accent-soft: rgba(37,99,235,.10);
+    --danger: #dc2626;
+    --gold: #b45309;
+    --pitch-a: #ffffff; --pitch-b: #ffffff;
+    --pitch-line: #16a34a;
+    --card-bg: #ffffff;
+    --card-border: #0f172a;
+    --card-shadow: 0 2px 0 rgba(15,23,42,.18);
+    --card-radius: 8px;
+    --font-display: "Segoe UI", system-ui, sans-serif;
+    --font-num: Consolas, ui-monospace, monospace;
+    --num-weight: 700;
+    --line-glow: none;
+    --line-glow-bad: none;
+    --star: #b45309;
+    --chip-gk:#6366f1; --chip-df:#0284c7; --chip-mf:#16a34a; --chip-fw:#ea580c;
+  }
+  [data-theme="taktik"] .pitch { border: 3px solid var(--pitch-line); }
+  [data-theme="panini"] .slot-card:nth-child(odd) .card { transform: rotate(-1.2deg); }
+  [data-theme="panini"] .slot-card:nth-child(even) .card { transform: rotate(1deg); }
+
+  /* ============ LAYOUT ============ */
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    min-height:100vh; background:var(--bg); color:var(--text);
+    font-family:var(--font-display); padding:18px 22px 40px;
+    transition: background .3s;
+  }
+  .topbar {
+    display:flex; align-items:center; gap:18px; padding:10px 18px;
+    background:var(--panel); border:1px solid var(--panel-border);
+    border-radius:12px; backdrop-filter:var(--panel-blur); margin-bottom:16px;
+  }
+  .clubname { font-size:19px; font-weight:800; letter-spacing:.3px; }
+  .topmeta { color:var(--text-dim); font-size:13px; }
+  .goldpill {
+    margin-left:auto; display:flex; align-items:center; gap:7px;
+    background:var(--accent-soft); border:1px solid var(--panel-border);
+    padding:6px 14px; border-radius:999px; font-weight:800; font-size:15px;
+    color:var(--gold); font-family:var(--font-num);
+  }
+  .coin { width:16px; height:16px; border-radius:50%; background:var(--gold);
+    box-shadow:inset -2px -2px 0 rgba(0,0,0,.25); }
+  .startbtn {
+    background:var(--accent); color:#fff; border:none; font-weight:800;
+    padding:10px 22px; border-radius:10px; font-size:14px; cursor:pointer;
+    letter-spacing:.4px; box-shadow:var(--card-shadow);
+  }
+  [data-theme="matchday"] .startbtn { color:#0b1220; }
+
+  .stage { display:flex; gap:18px; align-items:flex-start; justify-content:center; flex-wrap:wrap; }
+
+  /* ---- pitch ---- */
+  .pitchwrap { position:relative; width:640px; flex:none; }
+  .pitch {
+    position:relative; width:640px; height:760px; border-radius:14px; overflow:hidden;
+    background:repeating-linear-gradient(0deg, var(--pitch-a) 0 76px, var(--pitch-b) 76px 152px);
+    box-shadow:var(--card-shadow);
+  }
+  .pitch .line { position:absolute; border:2px solid var(--pitch-line); }
+  .halfline { left:0; right:0; top:50%; border-width:1px 0 0 0 !important; }
+  .centercircle { left:50%; top:50%; width:130px; height:130px; border-radius:50%;
+    transform:translate(-50%,-50%); }
+  .box { left:50%; transform:translateX(-50%); width:300px; height:110px; }
+  .box.top { top:-2px; border-top:none; } .box.bot { bottom:-2px; border-bottom:none; }
+
+  svg.links { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  .linkgood { stroke:var(--accent); stroke-width:3; fill:none; filter:var(--line-glow);
+    stroke-dasharray:6 7; animation:dash 1.4s linear infinite; }
+  .linkbad { stroke:var(--danger); stroke-width:2.5; fill:none; filter:var(--line-glow-bad);
+    stroke-dasharray:3 8; opacity:.85; }
+  @keyframes dash { to { stroke-dashoffset:-26; } }
+
+  .slot-card { position:absolute; transform:translate(-50%,-50%); }
+  .card {
+    width:118px; background:var(--card-bg); border:2px solid var(--card-border);
+    border-radius:var(--card-radius); box-shadow:var(--card-shadow);
+    padding:7px 9px 6px; position:relative; transition:transform .15s;
+  }
+  .card:hover { transform:translateY(-3px) scale(1.03); z-index:5; }
+  .cardtop { display:flex; align-items:center; justify-content:space-between; }
+  .ovr { font-family:var(--font-num); font-weight:var(--num-weight); font-size:24px; line-height:1; }
+  .poschip { font-size:10px; font-weight:800; color:#fff; padding:2px 7px; border-radius:6px; letter-spacing:.5px; }
+  .pname { font-size:12.5px; font-weight:700; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .microstats { display:flex; gap:6px; font-size:10px; color:var(--text-dim); margin-top:3px; font-family:var(--font-num); }
+  .microstats b { color:var(--text); }
+  .fit { font-size:11px; letter-spacing:1px; color:var(--star); margin-top:2px; }
+  .traiticon { position:absolute; top:-9px; right:-9px; width:22px; height:22px; border-radius:50%;
+    background:var(--accent); color:#fff; font-size:12px; display:flex; align-items:center;
+    justify-content:center; box-shadow:var(--card-shadow); border:2px solid var(--card-border); }
+  [data-theme="matchday"] .traiticon { color:#0b1220; }
+  .agebadge { position:absolute; bottom:-8px; left:-8px; font-size:9.5px; font-weight:700;
+    background:var(--panel); border:1px solid var(--panel-border); color:var(--text-dim);
+    border-radius:999px; padding:2px 7px; backdrop-filter:var(--panel-blur); }
+
+  /* ---- right panel ---- */
+  .sidecol { width:330px; display:flex; flex-direction:column; gap:14px; }
+  .panel {
+    background:var(--panel); border:1px solid var(--panel-border); border-radius:14px;
+    padding:16px 18px; backdrop-filter:var(--panel-blur);
+  }
+  .paneltitle { font-size:11px; font-weight:800; letter-spacing:1.6px; color:var(--text-dim);
+    text-transform:uppercase; margin-bottom:12px; }
+  .statrow { margin-bottom:14px; }
+  .statline { display:flex; align-items:baseline; gap:10px; }
+  .statlabel { font-size:12.5px; font-weight:700; width:86px; color:var(--text-dim); }
+  .statnum { font-family:var(--font-num); font-weight:var(--num-weight); font-size:26px; }
+  .delta { font-size:13px; font-weight:800; color:var(--accent); animation:pulse 1.1s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity:.45; } }
+  .bar { height:7px; border-radius:99px; background:var(--panel-border); margin-top:5px; overflow:hidden; position:relative; }
+  .bar i { position:absolute; inset:0; width:var(--w); background:var(--accent); border-radius:99px; display:block; }
+  .bar i.ghost { background:var(--accent); opacity:.35; width:var(--wg); }
+  .liganote { font-size:11.5px; color:var(--text-dim); margin-top:2px; }
+
+  .previewbox { border-left:3px solid var(--accent); }
+  .previewbox .pv { font-size:13px; line-height:1.55; }
+  .pv b { color:var(--accent); }
+  .pv .stars { color:var(--star); letter-spacing:1px; }
+
+  .synlist { font-size:12.5px; line-height:1.9; }
+  .syn-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:8px; }
+  .good { background:var(--accent); } .bad { background:var(--danger); }
+
+  /* ---- bench ---- */
+  .bench { margin:18px auto 0; max-width:990px; }
+  .benchtitle { font-size:11px; font-weight:800; letter-spacing:1.6px; color:var(--text-dim);
+    text-transform:uppercase; margin:0 0 8px 4px; }
+  .benchrow { display:flex; gap:12px; flex-wrap:wrap; }
+  .bench .card { width:112px; }
+  .dragging { outline:2.5px dashed var(--accent); outline-offset:4px; transform:rotate(-3deg) translateY(-6px); }
+  .draglabel { text-align:center; font-size:10px; color:var(--accent); font-weight:800; margin-top:6px;
+    letter-spacing:1px; text-transform:uppercase; }
+
+  /* ---- theme switcher & notes ---- */
+  .switcher { position:fixed; right:18px; top:18px; z-index:50; display:flex; gap:8px;
+    background:var(--panel); border:1px solid var(--panel-border); padding:8px;
+    border-radius:12px; backdrop-filter:var(--panel-blur); box-shadow:0 8px 30px rgba(0,0,0,.25); }
+  .switcher button { border:1px solid var(--panel-border); background:transparent; color:var(--text);
+    font-weight:700; font-size:12px; padding:7px 13px; border-radius:8px; cursor:pointer; }
+  .switcher button.active { background:var(--accent); color:#fff; border-color:transparent; }
+  [data-theme="matchday"] .switcher button.active { color:#0b1220; }
+  .mocknote { text-align:center; color:var(--text-dim); font-size:11.5px; margin-top:26px; }
+</style>
+</head>
+<body>
+
+<div class="switcher">
+  <button data-t="matchday" class="active">A · Matchday</button>
+  <button data-t="panini">B · Panini</button>
+  <button data-t="taktik">C · Taktiktavle</button>
+</div>
+
+<div class="topbar">
+  <div class="clubname">FC Dynasti</div>
+  <div class="topmeta">Division 5 · Sæson 3 · Kamp 8 af 14</div>
+  <div class="topmeta">Formation: <b style="color:var(--text)">4-4-2</b></div>
+  <div class="goldpill"><span class="coin"></span>1.240</div>
+  <button class="startbtn">FORTSÆT SÆSON ▶</button>
+</div>
+
+<div class="stage">
+  <div class="pitchwrap">
+    <div class="pitch">
+      <div class="line halfline"></div>
+      <div class="line centercircle"></div>
+      <div class="line box top"></div>
+      <div class="line box bot"></div>
+
+      <svg class="links" viewBox="0 0 640 760">
+        <!-- Målscorer + Playmaker -->
+        <path class="linkgood" d="M 218 218 C 230 300, 240 330, 248 388"/>
+        <!-- Venstre flanke: LM + LB -->
+        <path class="linkgood" d="M 92 400 C 84 460, 84 500, 92 548"/>
+        <!-- Negativ: to ens CM'er -->
+        <path class="linkbad" d="M 258 412 C 320 428, 330 428, 392 412"/>
+      </svg>
+
+      <!-- FW -->
+      <div class="slot-card" style="left:218px; top:210px;">
+        <div class="card">
+          <div class="traiticon" title="Målscorer">⚽</div>
+          <div class="cardtop"><span class="ovr">64</span><span class="poschip" style="background:var(--chip-fw)">ST</span></div>
+          <div class="pname">V. Holm</div>
+          <div class="microstats"><span>A <b>71</b></span><span>M <b>34</b></span><span>F <b>16</b></span></div>
+          <div class="fit">★★★★★☆</div>
+          <div class="agebadge">19 år · Pot 87</div>
+        </div>
+      </div>
+      <div class="slot-card" style="left:422px; top:210px;">
+        <div class="card">
+          <div class="cardtop"><span class="ovr">57</span><span class="poschip" style="background:var(--chip-fw)">ST</span></div>
+          <div class="pname">K. Dahl</div>
+          <div class="microstats"><span>A <b>61</b></span><span>M <b>29</b></span><span>F <b>14</b></span></div>
+          <div class="fit">★★★★★☆</div>
+          <div class="agebadge">27 år</div>
+        </div>
+      </div>
+
+      <!-- MF -->
+      <div class="slot-card" style="left:92px; top:400px;">
+        <div class="card">
+          <div class="cardtop"><span class="ovr">52</span><span class="poschip" style="background:var(--chip-mf)">LM</span></div>
+          <div class="pname">V. Lund</div>
+          <div class="microstats"><span>A <b>44</b></span><span>M <b>55</b></span><span>F <b>30</b></span></div>
+          <div class="fit">★★★★☆☆</div>
+          <div class="agebadge">24 år</div>
+        </div>
+      </div>
+      <div class="slot-card" style="left:250px; top:400px;">
+        <div class="card">
+          <div class="traiticon" title="Playmaker">✨</div>
+          <div class="cardtop"><span class="ovr">59</span><span class="poschip" style="background:var(--chip-mf)">CM</span></div>
+          <div class="pname">E. Bak</div>
+          <div class="microstats"><span>A <b>38</b></span><span>M <b>63</b></span><span>F <b>41</b></span></div>
+          <div class="fit">★★★★★★</div>
+          <div class="agebadge">26 år</div>
+        </div>
+      </div>
+      <div class="slot-card" style="left:400px; top:400px;">
+        <div class="card">
+          <div class="cardtop"><span class="ovr">55</span><span class="poschip" style="background:var(--chip-mf)">CM</span></div>
+          <div class="pname">O. Ravn</div>
+          <div class="microstats"><span>A <b>35</b></span><span>M <b>60</b></span><span>F <b>39</b></span></div>
+          <div class="fit">★★★★★☆</div>
+          <div class="agebadge">29 år</div>
+        </div>
+      </div>
+      <div class="slot-card" style="left:552px; top:400px;">
+        <div class="card">
+          <div class="cardtop"><span class="ovr">48</span><span class="poschip" style="background:var(--chip-mf)">RM</span></div>
+          <div class="pname">N. Friis</div>
+          <div class="microstats"><span>A <b>42</b></span><span>M <b>50</b></span><span>F <b>27</b></span></div>
+          <div class="fit">★★★☆☆☆</div>
+          <div class="agebadge">21 år</div>
+        </div>
+      </div>
+
+      <!-- DF -->
+      <div class="slot-card" style="left:92px; top:560px;">
+        <div class="card">
+          <div class="cardtop"><span class="ovr">50</span><span class="poschip" style="background:var(--chip-df)">LB</span></div>
+          <div class="pname">L. Vinter</div>
+          <div class="microstats"><span>A <b>28</b></span><span>M <b>36</b></span><span>F <b>54</b></span></div>
+          <div class="fit">★★★★★☆</div>
+          <div class="agebadge">25 år</div>
+        </div>
+      </div>
+      <div class="slot-card" style="left:250px; top:560px;">
+        <div class="card">
+          <div class="traiticon" title="Anfører">Ⓒ</div>
+          <div class="cardtop"><span class="ovr">56</span><span class="poschip" style="background:var(--chip-df)">CB</span></div>
+          <div class="pname">A. Holt</div>
+          <div class="microstats"><span>A <b>14</b></span><span>M <b>30</b></span><span>F <b>62</b></span></div>
+          <div class="fit">★★★★★★</div>
+          <div class="agebadge">31 år</div>
+        </div>
+      </div>
+      <div class="slot-card" style="left:400px; top:560px;">
+        <div class="card">
+          <div class="cardtop"><span class="ovr">51</span><span class="poschip" style="background:var(--chip-df)">CB</span></div>
+          <div class="pname">J. Brandt</div>
+          <div class="microstats"><span>A <b>12</b></span><span>M <b>28</b></span><span>F <b>58</b></span></div>
+          <div class="fit">★★★★★☆</div>
+          <div class="agebadge">23 år</div>
+        </div>
+      </div>
+      <div class="slot-card" style="left:552px; top:560px;">
+        <div class="card">
+          <div class="cardtop"><span class="ovr">46</span><span class="poschip" style="background:var(--chip-df)">RB</span></div>
+          <div class="pname">S. Kjær</div>
+          <div class="microstats"><span>A <b>25</b></span><span>M <b>31</b></span><span>F <b>49</b></span></div>
+          <div class="fit">★★★★☆☆</div>
+          <div class="agebadge">22 år</div>
+        </div>
+      </div>
+
+      <!-- GK -->
+      <div class="slot-card" style="left:320px; top:686px;">
+        <div class="card">
+          <div class="cardtop"><span class="ovr">44</span><span class="poschip" style="background:var(--chip-gk)">GK</span></div>
+          <div class="pname">M. Østergaard</div>
+          <div class="microstats"><span>A <b>2</b></span><span>M <b>8</b></span><span>F <b>52</b></span></div>
+          <div class="fit">★★★★★☆</div>
+          <div class="agebadge">28 år</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidecol">
+    <div class="panel">
+      <div class="paneltitle">Holdstyrke</div>
+      <div class="statrow">
+        <div class="statline"><span class="statlabel">ANGREB</span><span class="statnum" id="n1">246</span><span class="delta">→ 261 &nbsp;+15</span></div>
+        <div class="bar"><i class="ghost" style="--wg:78%"></i><i style="--w:70%"></i></div>
+        <div class="liganote">Liga-snit: 228</div>
+      </div>
+      <div class="statrow">
+        <div class="statline"><span class="statlabel">MIDTBANE</span><span class="statnum" id="n2">231</span></div>
+        <div class="bar"><i style="--w:64%"></i></div>
+        <div class="liganote">Liga-snit: 235</div>
+      </div>
+      <div class="statrow" style="margin-bottom:2px;">
+        <div class="statline"><span class="statlabel">FORSVAR</span><span class="statnum" id="n3">198</span></div>
+        <div class="bar"><i style="--w:52%"></i></div>
+        <div class="liganote">Liga-snit: 219 ⚠</div>
+      </div>
+    </div>
+
+    <div class="panel previewbox">
+      <div class="paneltitle">Preview · T. Iversen → ST</div>
+      <div class="pv">
+        Angreb <b>246 → 261</b> &nbsp;·&nbsp; Fit <span class="stars">★★★★☆☆</span><br>
+        Ny synergi: <b>Målscorer + Playmaker</b> forstærkes<br>
+        <span style="color:var(--text-dim)">K. Dahl ryger på bænken (−61 A)</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="paneltitle">Aktive synergier</div>
+      <div class="synlist">
+        <div><span class="syn-dot good"></span><b>Holm + Bak</b> — Målscorer finder Playmaker (+4 A)</div>
+        <div><span class="syn-dot good"></span><b>Lund + Vinter</b> — venstre flanke (+3 A)</div>
+        <div><span class="syn-dot good"></span><b>Holt (Anfører)</b> — Brandt &amp; Kjær +1 alle</div>
+        <div><span class="syn-dot bad"></span><b>Bak + Ravn</b> — overlappende roller (−2 M)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bench">
+  <div class="benchtitle">Bænken — træk en spiller ind på banen</div>
+  <div class="benchrow">
+    <div>
+      <div class="card dragging">
+        <div class="cardtop"><span class="ovr">58</span><span class="poschip" style="background:var(--chip-fw)">FW</span></div>
+        <div class="pname">T. Iversen</div>
+        <div class="microstats"><span>A <b>62</b></span><span>M <b>31</b></span><span>F <b>15</b></span></div>
+        <div class="agebadge">20 år · Pot 74</div>
+      </div>
+      <div class="draglabel">trækkes…</div>
+    </div>
+    <div class="card">
+      <div class="traiticon" title="Mentor">🎓</div>
+      <div class="cardtop"><span class="ovr">49</span><span class="poschip" style="background:var(--chip-mf)">MF</span></div>
+      <div class="pname">H. Winther</div>
+      <div class="microstats"><span>A <b>30</b></span><span>M <b>52</b></span><span>F <b>35</b></span></div>
+      <div class="agebadge">32 år</div>
+    </div>
+    <div class="card">
+      <div class="cardtop"><span class="ovr">31</span><span class="poschip" style="background:var(--chip-df)">DF</span></div>
+      <div class="pname">R. Skov <span style="color:var(--accent);font-size:9px;font-weight:800">ROOKIE</span></div>
+      <div class="microstats"><span>A <b>10</b></span><span>M <b>22</b></span><span>F <b>38</b></span></div>
+      <div class="agebadge">17 år · Pot 82</div>
+    </div>
+  </div>
+</div>
+
+<div class="mocknote">
+  Statisk mockup — samme layout i tre visuelle retninger (skift øverst til højre).
+  Preview-panelet og +15-deltaen viser hover-tilstanden fra DESIGN.md.
+</div>
+
+<script>
+  document.querySelectorAll('.switcher button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.documentElement.dataset.theme = b.dataset.t;
+      document.querySelectorAll('.switcher button').forEach(function (x) {
+        x.classList.toggle('active', x === b);
+      });
+    });
+  });
+</script>
+</body>
+</html>
