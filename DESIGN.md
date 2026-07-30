@@ -34,7 +34,12 @@ feature ikke gør draften eller opstillingen sjovere, ryger den.
    diagnose-venlige kampresultater gør næste draft til en hypotese.
 5. **Information er progression.** Scouting konverterer RNG til viden — man
    opgraderer ikke sine kort, man opgraderer sin evne til at vælge rigtigt.
-6. **Automatisering optjenes, gives aldrig.**
+6. **Kernen automatiseres aldrig.** Draft, opstilling og vinduets valg ER
+   spillet og forbliver manuelle for evigt. Incremental-følelsen kommer fra
+   kompression (kampfart, øjeblikkelig sæson-afvikling) og automatisering
+   af bi-elementer (fx feeder-klubber senere) — aldrig af beslutningerne.
+   Der findes ingen manuel træning at automatisere: XP kommer af spilletid,
+   punktum. Ingen træningsskemaer, nogensinde.
 
 ## Core loop (8-12 min per sæson)
 
@@ -365,9 +370,29 @@ Det spejler XP-dilemmaet (se Høsten), så hele spillet stiller samme spørgsmå
 i to former: *vind nu eller byg fremtiden?* To spillestile opstår af sig selv:
 pokaljægeren og handelsklubben (draft ungt → udvikl → sælg på toppen).
 
-**Spillersalg**: pris = level × alderskurve. Peak-alder sælger dyrt, veteraner
-billigt. Hver spiller har en livscyklus: draft ung → udvikl → peak (vind) →
-sælg før forfaldet. At time salget er en færdighed.
+**Spillersalg**: pris = OVR × alderskurve, plus potentiale-præmie for unge
+(køberne betaler for fremtiden — loftramte juveler er klubbens dyreste
+vare). Peak-alder sælger dyrt, veteraner billigt. Livscyklus: draft ung →
+udvikl → peak (vind) → sælg før forfaldet. At time salget er en færdighed.
+
+### Tal (division 5-baseline; alt skalerer ×~2,5 per division)
+
+**Indtægter:** mål 10 · sejr 50 · uafgjort 15 · placeringspræmie 50-500.
+Midterhold ≈ 700-800 guld/sæson; tophold ≈ 1.100.
+
+**Udgifter:** vindueskøb (peak-spiller) 300-800 · reroll 50 · første
+talent-nodes 200-400 · uendelige nodes ×1,6 per niveau · udviklingsloft
+1.000 / 2.500 / 6.000 / …
+
+**Balancemålet i én sætning:** en sæson finansierer ÉT meningsfuldt valg —
+et vindueskøb ELLER en solid node ELLER en bid af næste loft. Aldrig to.
+
+**Simuleret (career_sim.py, 20 sæsoner):** loft 58 købes ~S3, loft 66
+~S5-6 (target S5-7 ✓); ingen juvel forløses i division 5 — de sælges eller
+kræver oprykning ✓; loft-først og balanceret klart bedre end
+indkomst-først i sim uden transfervindue (vinduet mangler i sim'en og
+favoriserer indkomst-strategien — genbesøg +5%-satsen hvis skævheden
+består i playtest).
 
 *Playtest-vagt: hvis spillere hamstrer alt til træet og ignorerer butikken,
 overvej at splitte i to valutaer — men prøv med én først.*
@@ -375,25 +400,100 @@ overvej at splitte i to valutaer — men prøv med én først.*
 ## Høsten (dopamin-ceremonien)
 
 Efter sidste kamp: en instrueret belønningsskærm — spillerkort der vender,
-XP-bjælker der fyldes i sekvens, LEVEL UP-stempler, facilitets-bonusser vist
-eksplicit ("+30% XP fra Træningsanlæg niv. 3"). Spar ikke på animationen;
-den er halvdelen af loopets dopamin.
+XP-bjælker der fyldes i sekvens, OVR-hop som stempler ("64 → 67"),
+facilitets-bonusser vist eksplicit ("+30% XP fra Træningsanlæg niv. 3") —
+og loftramte spillere med grå bjælke og spildt XP (se Udviklingsloftet).
+Spar ikke på animationen; den er halvdelen af loopets dopamin.
 
 **XP fordeles efter spilletid.** Startere vokser mest → dilemmaet
 "stil de bedste og vind" vs. "giv de unge minutter og udvikl" opstår af sig
 selv og fodrer salgs-økonomien (udviklede spillere sælger dyrere).
 
-## Talent-træet
+## XP og udviklingsloftet
 
-Blandede nodes:
+### To lofter — det laveste gælder
 
-**Milepæle:** nye formationer (4-3-3, 3-5-2 …), scouting-niveauer, flere
-draft-picks, flere butiks-slots, større trup, ungdomsakademi (1-2 private
-prospects per sæson), automatisering (se nedenfor).
+```
+maks OVR = min(spillerens potentiale, klubbens udviklingsloft)
+```
 
-**Uendelige nodes (geometriske priser):** Træningsanlæg (XP+%), Stadion
-(guld per sejr+%), Fysioterapi (+karrierelængde — direkte modvægt til churn),
-kampafviklings-hastighed.
+Udviklingsloftet hæves via Træningsanlægget (se talent-træet). **En lille
+klub kan ikke forløse en juvel** — Pot 88 betyder intet, hvis anlægget
+stopper ham ved 50. Rammer en spiller loftet, stopper væksten synligt:
+grå bjælke på høst-skærmen, **"LOFT NÅET — 140 XP spildt"**. Spildt XP
+vises altid; den smerte driver næste beslutning:
+
+**Sælg juvelen eller hæv loftet.** Køberklubber betaler for potentiale, så
+en loftramt ung juvel er klubbens dyreste vare (~ét anlægs-niveau i pris).
+Loopet: *juvel → loft → sælg → investér → højere loft → behold den næste
+juvel længere.* Den lille klubs fantasi: talentfabrik før pokalmaskine.
+Aldringskurven tikker imens — en juvel, der venter 3 sæsoner på et
+loft-løft, mister vækstår for evigt. At sælge er ofte det rigtige; det
+skal gøre lidt ondt.
+
+Loftet rammer kun fremtiden: transfervinduets peak-spillere er
+færdigudviklede og upåvirkede — butikken forbliver ren "magt nu".
+
+### XP-regler
+
+| Kilde/modifikator | Værdi |
+|---|---|
+| Starter, per kamp | 10 XP |
+| Bænk, per kamp | 3 XP |
+| Under 23 år | ×1,5 |
+| Mentor-nabo (U21) | +50% |
+| Træningsanlæg | +10% per niveau |
+
+**Pris per OVR-point: `5 × 1,03^OVR` XP** (kalibreret i
+`simulation/career_sim.py`, del 1). Karriere-pacing under
+storklubs-forhold: fyld (Pot 45) ~1-2 sæsoner, solid (Pot 60) ~3-4,
+profil (Pot 78) ~6, juvel (Pot 88) ~9 — og i praksis langsommere, da
+rookies starter på bænken. Juvelen kan aldrig forløses af tid alene:
+kun tid plus infrastruktur.
+
+## Talent-træet (fire grene)
+
+Grenene spejler spillets søjler. Ingen gren automatiserer kernen
+(designprincip 6).
+
+**🎓 Akademiet (udvikling)**
+
+| Node | Effekt | Pris |
+|---|---|---|
+| Træningsanlæg I-VII | Udviklingsloft 50→58→66→74→82→90→99, +10% XP/trin | 1.000 / 2.500 / 6.000 / 15.000 / 40.000 / 100.000 |
+| Fysioterapi (uendelig) | −2% aldersforfald per niveau | 300, ×1,6 |
+| Ungdomsakademi (sen milestone) | 1-2 private prospects per sæson | dyr, sen 1.0/post-1.0 |
+
+Træningsanlæggets prisfaktor (~×2,5/trin) matcher divisions-skaleringen:
+hvert loft-niveau bliver overkommeligt ca. én division senere — loftet
+følger rejsen op gennem pyramiden.
+
+**🔭 Scouting-afdelingen (draft)**
+
+| Node | Effekt |
+|---|---|
+| Scoutkorps I-IV | +2 rapporter per trin (6 → 14) |
+| Fokus I / II | Rapporter på fokusgruppe koster det halve / to fokusgrupper |
+
+**🏟️ Klubben (økonomi)**
+
+| Node | Effekt |
+|---|---|
+| Stadion (uendelig) | +5% guld per sejr per niveau (300, ×1,6) |
+| Fanshop (uendelig) | +5% guld per mål per niveau (300, ×1,6) |
+| Bestyrelsen I-III | +25% placeringspræmie per trin |
+| Vindues-slots | 3 → 4 → 5 tilbud i transfervinduet |
+| Trupstørrelse | 14 → 16 → 18 |
+
+Stadion belønner sejre (kontrol-spillestil), Fanshop belønner mål
+(offensiv spillestil) — selv økonomi-nodes har build-identitet.
+
+**⚽ Førsteholdet (kamp)**
+
+| Node | Effekt |
+|---|---|
+| Formationer | 4-3-3, 3-5-2, 4-5-1, 5-3-2 (én ad gangen, stigende pris) |
+| Kampfart I-III | 10s → 7s → 5s → 3s per kamp |
 
 ## Churn: motoren der holder draften i live
 
@@ -408,9 +508,11 @@ evigt; intet skal opfindes.
   (fiktive) superligaer opad i det absurde, med eksponentielt voksende
   ratings og økonomi. Oprykning = breakthrough; første sæson i ny liga =
   væg (og giver topvalg i draften).
-- **Automatiseringsstigen** (købes sent): auto-opstilling af reserver →
-  auto-sæson (skip) → assistent der drafter sene picks → sportsdirektør.
-  Aktiv tilstedeværelse forbliver en multiplikator, aldrig en port.
+- **Kompression, ikke automatisering**: kampfart-opgraderinger og
+  øjeblikkelig sæson-afvikling (sæsonen er i forvejen passiv tilskuertid).
+  Kernen (draft, opstilling, vindue) forbliver manuel for evigt; kun
+  bi-elementer automatiseres — en sportsdirektør kan drive feeder-klubberne,
+  aldrig din klub.
 - **Prestige — "Arven"**: opløs klubben, grundlæg en ny. Mist trup, stadion
   og guld; få Legacy-point (trofæer, æra-rekorder) til permanente multipliers,
   start i højere liga, bedre scouting-baseline — og én **Klublegende**:
@@ -431,8 +533,8 @@ evigt; intet skal opfindes.
 - Transfervindue efter kamp 7: 3 slots, reroll, peak-alder-spillere
 - Guld per sejr + per mål; spillersalg med alderskurve-pris
 - Høst-skærm **med animation**
-- Talent tree: Træningsanlæg (uendelig), Stadion (uendelig), Scouting,
-  unlock af 4-3-3 som gulerod
+- Talent tree: Træningsanlæg I-II (udviklingsloft 50→58), Stadion
+  (uendelig), Scoutkorps I, unlock af 4-3-3 som gulerod
 - Ingen prestige, ingen feeder-klubber, ingen pyramide endnu
 
 ### Testspørgsmålene
