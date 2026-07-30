@@ -81,9 +81,73 @@
     --star: #b45309;
     --chip-gk:#6366f1; --chip-df:#0284c7; --chip-mf:#16a34a; --chip-fw:#ea580c;
   }
+  [data-theme="neon"] {
+    --bg: radial-gradient(900px 600px at 20% -10%, #3b1d7a 0%, transparent 55%),
+          radial-gradient(900px 600px at 85% 0%, #7a1d5e 0%, transparent 50%),
+          linear-gradient(180deg, #17102e 0%, #0d0820 100%);
+    --panel: rgba(255,255,255,.055);
+    --panel-border: rgba(167,139,250,.35);
+    --panel-blur: blur(12px);
+    --text: #f3efff;
+    --text-dim: #a99fd1;
+    --accent: #22d3ee;
+    --accent-soft: rgba(34,211,238,.14);
+    --danger: #f43f5e;
+    --gold: #fde047;
+    --pitch-a: #241c55; --pitch-b: #2a2163;
+    --pitch-line: rgba(34,211,238,.55);
+    --card-bg: linear-gradient(180deg, rgba(46,32,99,.95), rgba(24,16,58,.97));
+    --card-border: #7c3aed;
+    --card-shadow: 0 6px 22px rgba(124,58,237,.45);
+    --card-radius: 12px;
+    --font-display: "Segoe UI", system-ui, sans-serif;
+    --font-num: "Segoe UI", system-ui, sans-serif;
+    --num-weight: 800;
+    --line-glow: drop-shadow(0 0 8px rgba(34,211,238,.9));
+    --line-glow-bad: drop-shadow(0 0 8px rgba(244,63,94,.9));
+    --star: #fde047;
+    --chip-gk:#a78bfa; --chip-df:#38bdf8; --chip-mf:#34d399; --chip-fw:#fb7185;
+  }
+  [data-theme="pop"] {
+    --bg: radial-gradient(circle at 20% 15%, rgba(255,255,255,.5) 0 2px, transparent 2px) 0 0/26px 26px, #ffedc2;
+    --panel: #fffdf4;
+    --panel-border: #1a1a1a;
+    --panel-blur: none;
+    --text: #1f1f1f;
+    --text-dim: #6f675a;
+    --accent: #ff7a00;
+    --accent-soft: rgba(255,122,0,.13);
+    --danger: #e5484d;
+    --gold: #d98e04;
+    --pitch-a: #56c75a; --pitch-b: #4dbd52;
+    --pitch-line: rgba(255,255,255,.85);
+    --card-bg: #ffffff;
+    --card-border: #1a1a1a;
+    --card-shadow: 0 4px 0 #1a1a1a;
+    --card-radius: 14px;
+    --font-display: "Segoe UI", system-ui, sans-serif;
+    --font-num: "Segoe UI", system-ui, sans-serif;
+    --num-weight: 900;
+    --line-glow: none;
+    --line-glow-bad: none;
+    --star: #f5a623;
+    --chip-gk:#9b5de5; --chip-df:#00a8e8; --chip-mf:#38b000; --chip-fw:#ff6d00;
+  }
   [data-theme="taktik"] .pitch { border: 3px solid var(--pitch-line); }
   [data-theme="panini"] .slot-card:nth-child(odd) .card { transform: rotate(-1.2deg); }
   [data-theme="panini"] .slot-card:nth-child(even) .card { transform: rotate(1deg); }
+  [data-theme="neon"] .ovr, [data-theme="neon"] .statnum {
+    background:linear-gradient(90deg,#22d3ee,#e879f9);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  [data-theme="neon"] .startbtn { background:linear-gradient(90deg,#e879f9,#22d3ee); color:#120b26; }
+  [data-theme="neon"] .linkgood { stroke-width:3.5; }
+  [data-theme="pop"] .card { border-width:3px; }
+  [data-theme="pop"] .pitch { border:3px solid #1a1a1a; }
+  [data-theme="pop"] .topbar, [data-theme="pop"] .panel { border-width:2.5px; box-shadow:0 4px 0 rgba(26,26,26,.85); }
+  [data-theme="pop"] .startbtn { border:2.5px solid #1a1a1a; box-shadow:0 4px 0 #1a1a1a; color:#fff; }
+  [data-theme="pop"] .linkgood { stroke-width:4.5; stroke-dasharray:1 11; stroke-linecap:round; }
+  [data-theme="pop"] .poschip { border:2px solid #1a1a1a; }
 
   /* ============ LAYOUT ============ */
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -214,6 +278,8 @@
   <button data-t="matchday" class="active">A · Matchday</button>
   <button data-t="panini">B · Panini</button>
   <button data-t="taktik">C · Taktiktavle</button>
+  <button data-t="neon">G · Neon</button>
+  <button data-t="pop">H · Pop</button>
 </div>
 
 <div class="topbar">
@@ -423,8 +489,9 @@
 </div>
 
 <div class="mocknote">
-  Statisk mockup — samme layout i tre visuelle retninger (skift øverst til højre).
+  Statisk mockup — samme layout i fem visuelle retninger (skift øverst til højre).
   Preview-panelet og +15-deltaen viser hover-tilstanden fra DESIGN.md.
+  (D-F er pixel-retningerne i formation-mockup-pixel.html.)
 </div>
 
 <script>
