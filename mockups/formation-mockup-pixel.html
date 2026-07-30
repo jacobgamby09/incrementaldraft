@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="da" data-theme="snes">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynastiet — Formations-mockup PIXEL (3 retninger)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+  /* ============ PIXEL-TOKENS ============ */
+  :root, [data-theme="snes"] {
+    --bg: #1d2b53;
+    --bg-pattern: repeating-linear-gradient(0deg, rgba(255,255,255,.02) 0 4px, transparent 4px 8px);
+    --panel: #f6e7bd;
+    --panel-b-light: #fffbe6;
+    --panel-b-dark: #a88d50;
+    --text: #33291c;
+    --text-dim: #7d6b4e;
+    --accent: #2fa84f;
+    --accent-text: #1c7c39;
+    --danger: #d94343;
+    --gold: #b57e10;
+    --gold-bright: #ffd34e;
+    --pitch-a: #4e9b47; --pitch-b: #439040;
+    --pitch-line: #e8f5e0;
+    --card-bg: #fdf6dd;
+    --card-text: #33291c;
+    --num-color: #1d2b53;
+    --scan: none;
+    --glow: none;
+    --chip-gk:#7d5ba6; --chip-df:#3b7bbf; --chip-mf:#2f8f43; --chip-fw:#d8742a;
+  }
+  [data-theme="crt"] {
+    --bg: #050805;
+    --bg-pattern: none;
+    --panel: #0a120a;
+    --panel-b-light: #00ff66;
+    --panel-b-dark: #00b34a;
+    --text: #c8ffd8;
+    --text-dim: #55a06c;
+    --accent: #00ff66;
+    --accent-text: #00ff66;
+    --danger: #ff4477;
+    --gold: #ffb000;
+    --gold-bright: #ffb000;
+    --pitch-a: #06180c; --pitch-b: #05140a;
+    --pitch-line: #00ff66;
+    --card-bg: #0d1a10;
+    --card-text: #c8ffd8;
+    --num-color: #00ff66;
+    --scan: block;
+    --glow: 0 0 6px rgba(0,255,102,.55);
+    --chip-gk:#00e5ff; --chip-df:#00ff66; --chip-mf:#ffe14d; --chip-fw:#ffb000;
+  }
+  [data-theme="gameboy"] {
+    --bg: #9bbc0f;
+    --bg-pattern: repeating-linear-gradient(90deg, rgba(15,56,15,.05) 0 2px, transparent 2px 4px);
+    --panel: #8bac0f;
+    --panel-b-light: #9bbc0f;
+    --panel-b-dark: #0f380f;
+    --text: #0f380f;
+    --text-dim: #306230;
+    --accent: #0f380f;
+    --accent-text: #0f380f;
+    --danger: #0f380f;
+    --gold: #0f380f;
+    --gold-bright: #0f380f;
+    --pitch-a: #8bac0f; --pitch-b: #84a50e;
+    --pitch-line: #0f380f;
+    --card-bg: #9bbc0f;
+    --card-text: #0f380f;
+    --num-color: #0f380f;
+    --scan: none;
+    --glow: none;
+    --chip-gk:#306230; --chip-df:#306230; --chip-mf:#306230; --chip-fw:#0f380f;
+  }
+  [data-theme="gameboy"] .linkbad { stroke-dasharray:2 6 !important; }
+  [data-theme="gameboy"] .poschip { background:transparent !important; border:2px solid var(--text); color:var(--text) !important; }
+
+  /* ============ BASE ============ */
+  * { margin:0; padding:0; box-sizing:border-box; image-rendering:pixelated; }
+  body {
+    min-height:100vh; background:var(--bg); background-image:var(--bg-pattern);
+    color:var(--text); font-family:"VT323", "Courier New", monospace;
+    font-size:19px; padding:18px 22px 40px;
+  }
+  .scanlines { display:var(--scan); pointer-events:none; position:fixed; inset:0; z-index:99;
+    background:repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 1px, transparent 1px 3px); }
+  .pxfont { font-family:"Press Start 2P", "Courier New", monospace; }
+
+  .pxpanel {
+    background:var(--panel);
+    border:4px solid;
+    border-color:var(--panel-b-light) var(--panel-b-dark) var(--panel-b-dark) var(--panel-b-light);
+    box-shadow: 4px 4px 0 rgba(0,0,0,.35);
+  }
+
+  .topbar { display:flex; align-items:center; gap:20px; padding:10px 16px; margin-bottom:16px; }
+  .clubname { font-size:13px; letter-spacing:1px; text-shadow:var(--glow); }
+  .topmeta { color:var(--text-dim); font-size:18px; }
+  .goldpill { margin-left:auto; display:flex; align-items:center; gap:8px;
+    font-family:"Press Start 2P", monospace; font-size:12px; color:var(--gold); text-shadow:var(--glow); }
+  .coin { width:14px; height:14px; background:var(--gold-bright);
+    clip-path:polygon(25% 0,75% 0,100% 25%,100% 75%,75% 100%,25% 100%,0 75%,0 25%); }
+  .startbtn {
+    font-family:"Press Start 2P", monospace; font-size:10px; cursor:pointer;
+    background:var(--accent); color:var(--panel); border:4px solid;
+    border-color:var(--panel-b-light) var(--panel-b-dark) var(--panel-b-dark) var(--panel-b-light);
+    padding:10px 16px; box-shadow:3px 3px 0 rgba(0,0,0,.35);
+  }
+  [data-theme="crt"] .startbtn { background:transparent; color:var(--accent); text-shadow:var(--glow); }
+  [data-theme="gameboy"] .startbtn { background:var(--text); color:var(--bg); }
+
+  .stage { display:flex; gap:18px; align-items:flex-start; justify-content:center; flex-wrap:wrap; }
+
+  /* ---- pitch ---- */
+  .pitch {
+    position:relative; width:640px; height:760px; flex:none; overflow:hidden;
+    background:
+      repeating-linear-gradient(0deg, var(--pitch-a) 0 64px, var(--pitch-b) 64px 128px);
+    border:4px solid var(--pitch-line); box-shadow:6px 6px 0 rgba(0,0,0,.35);
+  }
+  [data-theme="snes"] .pitch {
+    background:
+      repeating-conic-gradient(var(--pitch-a) 0% 25%, var(--pitch-b) 0% 50%) 0 0/64px 64px;
+  }
+  .pitch .line { position:absolute; border:4px solid var(--pitch-line); }
+  .halfline { left:0; right:0; top:50%; border-width:4px 0 0 0 !important; }
+  .centercircle { left:50%; top:50%; width:128px; height:128px; transform:translate(-50%,-50%);
+    clip-path:polygon(50% 0,80% 7%,93% 20%,100% 50%,93% 80%,80% 93%,50% 100%,20% 93%,7% 80%,0 50%,7% 20%,20% 7%);
+    border:none; background:transparent; box-shadow:inset 0 0 0 4px var(--pitch-line); }
+  .box { left:50%; transform:translateX(-50%); width:296px; height:104px; }
+  .box.top { top:-4px; border-top:none; } .box.bot { bottom:-4px; border-bottom:none; }
+
+  svg.links { position:absolute; inset:0; width:100%; height:100%; pointer-events:none;
+    shape-rendering:crispEdges; }
+  .linkgood { stroke:var(--accent); stroke-width:4; fill:none; stroke-dasharray:8 8;
+    animation:dash 1s steps(4) infinite; }
+  [data-theme="crt"] .linkgood { filter:drop-shadow(0 0 4px var(--accent)); }
+  .linkbad { stroke:var(--danger); stroke-width:4; fill:none; stroke-dasharray:4 10; opacity:.9; }
+  @keyframes dash { to { stroke-dashoffset:-32; } }
+
+  /* ---- cards ---- */
+  .slot-card { position:absolute; transform:translate(-50%,-50%); }
+  .card {
+    width:122px; background:var(--card-bg); color:var(--card-text);
+    border:3px solid var(--panel-b-dark);
+    box-shadow: inset 2px 2px 0 var(--panel-b-light), 4px 4px 0 rgba(0,0,0,.35);
+    padding:6px 8px 6px; position:relative;
+  }
+  .card:hover { transform:translate(0,-3px); }
+  .cardtop { display:flex; align-items:center; justify-content:space-between; gap:6px; }
+  .ovr { font-family:"Press Start 2P", monospace; font-size:15px; color:var(--num-color); text-shadow:var(--glow); }
+  .poschip { font-family:"Press Start 2P", monospace; font-size:7px; color:#fff; padding:3px 5px; }
+  .jersey { width:22px; height:18px; }
+  .pname { font-size:17px; margin-top:2px; white-space:nowrap; overflow:hidden; }
+  .microstats { display:flex; gap:7px; font-size:15px; color:var(--text-dim); }
+  .microstats b { color:var(--card-text); font-weight:normal; }
+  .fitrow { display:flex; gap:2px; margin-top:3px; }
+  .fb { width:9px; height:9px; background:var(--panel-b-dark); opacity:.35; }
+  .fb.on { background:var(--gold); opacity:1; }
+  [data-theme="crt"] .fb.on { box-shadow:0 0 4px var(--gold); }
+  .traiticon { position:absolute; top:-10px; right:-10px; width:22px; height:22px;
+    background:var(--accent); color:var(--panel); font-size:13px; line-height:20px; text-align:center;
+    border:3px solid var(--panel-b-dark); }
+  [data-theme="crt"] .traiticon { background:#0a120a; color:var(--accent); text-shadow:var(--glow); }
+  .agebadge { position:absolute; bottom:-10px; left:-6px; font-size:13px; line-height:1;
+    background:var(--panel); border:2px solid var(--panel-b-dark); color:var(--text-dim); padding:2px 6px; }
+
+  /* ---- sidepanels ---- */
+  .sidecol { width:330px; display:flex; flex-direction:column; gap:16px; }
+  .panel { padding:14px 16px; }
+  .paneltitle { font-family:"Press Start 2P", monospace; font-size:9px; color:var(--text-dim);
+    margin-bottom:12px; letter-spacing:1px; }
+  .statrow { margin-bottom:13px; }
+  .statline { display:flex; align-items:baseline; gap:10px; }
+  .statlabel { font-size:17px; width:92px; color:var(--text-dim); }
+  .statnum { font-family:"Press Start 2P", monospace; font-size:17px; color:var(--num-color); text-shadow:var(--glow); }
+  .delta { font-family:"Press Start 2P", monospace; font-size:9px; color:var(--accent-text);
+    animation:blink 1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity:.3; } }
+  .bar { height:12px; margin-top:5px; background:rgba(0,0,0,.22); border:2px solid var(--panel-b-dark);
+    position:relative; }
+  .bar i { position:absolute; top:0; bottom:0; left:0; width:var(--w); display:block;
+    background:repeating-linear-gradient(90deg, var(--accent) 0 8px, transparent 8px 10px); }
+  .bar i.ghost { opacity:.35; width:var(--wg); }
+  .liganote { font-size:15px; color:var(--text-dim); margin-top:2px; }
+
+  .previewbox { border-left:8px solid var(--accent); }
+  .pv { font-size:17px; line-height:1.5; }
+  .pv b { color:var(--accent-text); text-shadow:var(--glow); }
+  .synlist { font-size:17px; line-height:1.8; }
+  .syn-dot { display:inline-block; width:10px; height:10px; margin-right:9px; }
+  .good { background:var(--accent); } .bad2 { background:var(--danger); }
+  [data-theme="gameboy"] .bad2 { background:transparent; border:2px solid var(--danger); }
+
+  /* ---- bench ---- */
+  .bench { margin:20px auto 0; max-width:990px; }
+  .benchtitle { font-family:"Press Start 2P", monospace; font-size:9px; color:var(--text-dim); margin:0 0 12px 4px; }
+  .benchrow { display:flex; gap:16px; flex-wrap:wrap; }
+  .bench .card { width:118px; }
+  .dragging { outline:3px dashed var(--accent); outline-offset:4px; transform:translateY(-5px); }
+  .draglabel { text-align:center; font-family:"Press Start 2P", monospace; font-size:8px;
+    color:var(--accent-text); margin-top:9px; text-shadow:var(--glow); }
+
+  .switcher { position:fixed; right:18px; top:18px; z-index:100; display:flex; gap:8px; padding:8px; }
+  .switcher button { font-family:"Press Start 2P", monospace; font-size:8px; cursor:pointer;
+    background:var(--card-bg); color:var(--text); padding:8px 10px;
+    border:3px solid var(--panel-b-dark); box-shadow:2px 2px 0 rgba(0,0,0,.3); }
+  .switcher button.active { background:var(--accent); color:var(--panel); }
+  [data-theme="crt"] .switcher button.active { background:transparent; color:var(--accent); text-shadow:var(--glow); }
+  .mocknote { text-align:center; color:var(--text-dim); font-size:16px; margin-top:28px; }
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+
+<div class="switcher pxpanel">
+  <button data-t="snes" class="active">D · 16-BIT</button>
+  <button data-t="crt">E · CRT</button>
+  <button data-t="gameboy">F · GAMEBOY</button>
+</div>
+
+<div class="topbar pxpanel">
+  <div class="clubname pxfont">FC DYNASTI</div>
+  <div class="topmeta">Division 5 &nbsp;·&nbsp; Sæson 3 &nbsp;·&nbsp; Kamp 8/14 &nbsp;·&nbsp; 4-4-2</div>
+  <div class="goldpill"><span class="coin"></span>1.240</div>
+  <button class="startbtn">FORTSÆT ▶</button>
+</div>
+
+<div class="stage">
+  <div class="pitch">
+    <div class="line halfline"></div>
+    <div class="centercircle"></div>
+    <div class="line box top"></div>
+    <div class="line box bot"></div>
+
+    <svg class="links" viewBox="0 0 640 760">
+      <path class="linkgood" d="M 218 232 L 218 310 L 250 310 L 250 380"/>
+      <path class="linkgood" d="M 92 420 L 92 540"/>
+      <path class="linkbad"  d="M 262 404 L 320 404 L 320 404 L 388 404"/>
+    </svg>
+
+    <!-- FW -->
+    <div class="slot-card" style="left:218px; top:210px;">
+      <div class="card">
+        <div class="traiticon" title="Målscorer">⚽</div>
+        <div class="cardtop">
+          <svg class="jersey" viewBox="0 0 11 9"><g fill="var(--chip-fw)"><rect x="2" y="0" width="2" height="2"/><rect x="7" y="0" width="2" height="2"/><rect x="0" y="1" width="3" height="3"/><rect x="8" y="1" width="3" height="3"/><rect x="2" y="1" width="7" height="8"/></g></svg>
+          <span class="ovr">64</span><span class="poschip" style="background:var(--chip-fw)">ST</span>
+        </div>
+        <div class="pname">V. Holm</div>
+        <div class="microstats"><span>A <b>71</b></span><span>M <b>34</b></span><span>F <b>16</b></span></div>
+        <div class="fitrow"><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb"></b></div>
+        <div class="agebadge">19 år · Pot 87</div>
+      </div>
+    </div>
+    <div class="slot-card" style="left:422px; top:210px;">
+      <div class="card">
+        <div class="cardtop">
+          <svg class="jersey" viewBox="0 0 11 9"><g fill="var(--chip-fw)"><rect x="2" y="0" width="2" height="2"/><rect x="7" y="0" width="2" height="2"/><rect x="0" y="1" width="3" height="3"/><rect x="8" y="1" width="3" height="3"/><rect x="2" y="1" width="7" height="8"/></g></svg>
+          <span class="ovr">57</span><span class="poschip" style="background:var(--chip-fw)">ST</span>
+        </div>
+        <div class="pname">K. Dahl</div>
+        <div class="microstats"><span>A <b>61</b></span><span>M <b>29</b></span><span>F <b>14</b></span></div>
+        <div class="fitrow"><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb"></b></div>
+        <div class="agebadge">27 år</div>
+      </div>
+    </div>
+
+    <!-- MF -->
+    <div class="slot-card" style="left:92px; top:400px;">
+      <div class="card">
+        <div class="cardtop">
+          <svg class="jersey" viewBox="0 0 11 9"><g fill="var(--chip-mf)"><rect x="2" y="0" width="2" height="2"/><rect x="7" y="0" width="2" height="2"/><rect x="0" y="1" width="3" height="3"/><rect x="8" y="1" width="3" height="3"/><rect x="2" y="1" width="7" height="8"/></g></svg>
+          <span class="ovr">52</span><span class="poschip" style="background:var(--chip-mf)">LM</span>
+        </div>
+        <div class="pname">V. Lund</div>
+        <div class="microstats"><span>A <b>44</b></span><span>M <b>55</b></span><span>F <b>30</b></span></div>
+        <div class="fitrow"><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb"></b><b class="fb"></b></div>
+        <div class="agebadge">24 år</div>
+      </div>
+    </div>
+    <div class="slot-card" style="left:250px; top:400px;">
+      <div class="card">
+        <div class="traiticon" title="Playmaker">✦</div>
+        <div class="cardtop">
+          <svg class="jersey" viewBox="0 0 11 9"><g fill="var(--chip-mf)"><rect x="2" y="0" width="2" height="2"/><rect x="7" y="0" width="2" height="2"/><rect x="0" y="1" width="3" height="3"/><rect x="8" y="1" width="3" height="3"/><rect x="2" y="1" width="7" height="8"/></g></svg>
+          <span class="ovr">59</span><span class="poschip" style="background:var(--chip-mf)">CM</span>
+        </div>
+        <div class="pname">E. Bak</div>
+        <div class="microstats"><span>A <b>38</b></span><span>M <b>63</b></span><span>F <b>41</b></span></div>
+        <div class="fitrow"><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b></div>
+        <div class="agebadge">26 år</div>
+      </div>
+    </div>
+    <div class="slot-card" style="left:400px; top:400px;">
+      <div class="card">
+        <div class="cardtop">
+          <svg class="jersey" viewBox="0 0 11 9"><g fill="var(--chip-mf)"><rect x="2" y="0" width="2" height="2"/><rect x="7" y="0" width="2" height="2"/><rect x="0" y="1" width="3" height="3"/><rect x="8" y="1" width="3" height="3"/><rect x="2" y="1" width="7" height="8"/></g></svg>
+          <span class="ovr">55</span><span class="poschip" style="background:var(--chip-mf)">CM</span>
+        </div>
+        <div class="pname">O. Ravn</div>
+        <div class="microstats"><span>A <b>35</b></span><span>M <b>60</b></span><span>F <b>39</b></span></div>
+        <div class="fitrow"><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb"></b></div>
+        <div class="agebadge">29 år</div>
+      </div>
+    </div>
+    <div class="slot-card" style="left:552px; top:400px;">
+      <div class="card">
+        <div class="cardtop">
+          <svg class="jersey" viewBox="0 0 11 9"><g fill="var(--chip-mf)"><rect x="2" y="0" width="2" height="2"/><rect x="7" y="0" width="2" height="2"/><rect x="0" y="1" width="3" height="3"/><rect x="8" y="1" width="3" height="3"/><rect x="2" y="1" width="7" height="8"/></g></svg>
+          <span class="ovr">48</span><span class="poschip" style="background:var(--chip-mf)">RM</span>
+        </div>
+        <div class="pname">N. Friis</div>
+        <div class="microstats"><span>A <b>42</b></span><span>M <b>50</b></span><span>F <b>27</b></span></div>
+        <div class="fitrow"><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb"></b><b class="fb"></b><b class="fb"></b></div>
+        <div class="agebadge">21 år</div>
+      </div>
+    </div>
+
+    <!-- DF -->
+    <div class="slot-card" style="left:92px; top:560px;">
+      <div class="card">
+        <div class="cardtop">
+          <svg class="jersey" viewBox="0 0 11 9"><g fill="var(--chip-df)"><rect x="2" y="0" width="2" height="2"/><rect x="7" y="0" width="2" height="2"/><rect x="0" y="1" width="3" height="3"/><rect x="8" y="1" width="3" height="3"/><rect x="2" y="1" width="7" height="8"/></g></svg>
+          <span class="ovr">50</span><span class="poschip" style="background:var(--chip-df)">LB</span>
+        </div>
+        <div class="pname">L. Vinter</div>
+        <div class="microstats"><span>A <b>28</b></span><span>M <b>36</b></span><span>F <b>54</b></span></div>
+        <div class="fitrow"><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb"></b></div>
+        <div class="agebadge">25 år</div>
+      </div>
+    </div>
+    <div class="slot-card" style="left:250px; top:560px;">
+      <div class="card">
+        <div class="traiticon" title="Anfører">C</div>
+        <div class="cardtop">
+          <svg class="jersey" viewBox="0 0 11 9"><g fill="var(--chip-df)"><rect x="2" y="0" width="2" height="2"/><rect x="7" y="0" width="2" height="2"/><rect x="0" y="1" width="3" height="3"/><rect x="8" y="1" width="3" height="3"/><rect x="2" y="1" width="7" height="8"/></g></svg>
+          <span class="ovr">56</span><span class="poschip" style="background:var(--chip-df)">CB</span>
+        </div>
+        <div class="pname">A. Holt</div>
+        <div class="microstats"><span>A <b>14</b></span><span>M <b>30</b></span><span>F <b>62</b></span></div>
+        <div class="fitrow"><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b></div>
+        <div class="agebadge">31 år</div>
+      </div>
+    </div>
+    <div class="slot-card" style="left:400px; top:560px;">
+      <div class="card">
+        <div class="cardtop">
+          <svg class="jersey" viewBox="0 0 11 9"><g fill="var(--chip-df)"><rect x="2" y="0" width="2" height="2"/><rect x="7" y="0" width="2" height="2"/><rect x="0" y="1" width="3" height="3"/><rect x="8" y="1" width="3" height="3"/><rect x="2" y="1" width="7" height="8"/></g></svg>
+          <span class="ovr">51</span><span class="poschip" style="background:var(--chip-df)">CB</span>
+        </div>
+        <div class="pname">J. Brandt</div>
+        <div class="microstats"><span>A <b>12</b></span><span>M <b>28</b></span><span>F <b>58</b></span></div>
+        <div class="fitrow"><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb"></b></div>
+        <div class="agebadge">23 år</div>
+      </div>
+    </div>
+    <div class="slot-card" style="left:552px; top:560px;">
+      <div class="card">
+        <div class="cardtop">
+          <svg class="jersey" viewBox="0 0 11 9"><g fill="var(--chip-df)"><rect x="2" y="0" width="2" height="2"/><rect x="7" y="0" width="2" height="2"/><rect x="0" y="1" width="3" height="3"/><rect x="8" y="1" width="3" height="3"/><rect x="2" y="1" width="7" height="8"/></g></svg>
+          <span class="ovr">46</span><span class="poschip" style="background:var(--chip-df)">RB</span>
+        </div>
+        <div class="pname">S. Kjær</div>
+        <div class="microstats"><span>A <b>25</b></span><span>M <b>31</b></span><span>F <b>49</b></span></div>
+        <div class="fitrow"><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb"></b><b class="fb"></b></div>
+        <div class="agebadge">22 år</div>
+      </div>
+    </div>
+
+    <!-- GK -->
+    <div class="slot-card" style="left:320px; top:686px;">
+      <div class="card">
+        <div class="cardtop">
+          <svg class="jersey" viewBox="0 0 11 9"><g fill="var(--chip-gk)"><rect x="2" y="0" width="2" height="2"/><rect x="7" y="0" width="2" height="2"/><rect x="0" y="1" width="3" height="3"/><rect x="8" y="1" width="3" height="3"/><rect x="2" y="1" width="7" height="8"/></g></svg>
+          <span class="ovr">44</span><span class="poschip" style="background:var(--chip-gk)">GK</span>
+        </div>
+        <div class="pname">M. Østergaard</div>
+        <div class="microstats"><span>A <b>2</b></span><span>M <b>8</b></span><span>F <b>52</b></span></div>
+        <div class="fitrow"><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb on"></b><b class="fb"></b></div>
+        <div class="agebadge">28 år</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidecol">
+    <div class="panel pxpanel">
+      <div class="paneltitle">HOLDSTYRKE</div>
+      <div class="statrow">
+        <div class="statline"><span class="statlabel">ANGREB</span><span class="statnum">246</span><span class="delta">→261 +15</span></div>
+        <div class="bar"><i class="ghost" style="--wg:78%"></i><i style="--w:70%"></i></div>
+        <div class="liganote">Liga-snit: 228</div>
+      </div>
+      <div class="statrow">
+        <div class="statline"><span class="statlabel">MIDTBANE</span><span class="statnum">231</span></div>
+        <div class="bar"><i style="--w:64%"></i></div>
+        <div class="liganote">Liga-snit: 235</div>
+      </div>
+      <div class="statrow" style="margin-bottom:2px;">
+        <div class="statline"><span class="statlabel">FORSVAR</span><span class="statnum">198</span></div>
+        <div class="bar"><i style="--w:52%"></i></div>
+        <div class="liganote">Liga-snit: 219 ⚠</div>
+      </div>
+    </div>
+
+    <div class="panel pxpanel previewbox">
+      <div class="paneltitle">PREVIEW · IVERSEN → ST</div>
+      <div class="pv">
+        Angreb <b>246 → 261</b> · Fit <b>4/6</b><br>
+        Ny synergi: <b>Målscorer + Playmaker</b><br>
+        <span style="color:var(--text-dim)">K. Dahl ryger på bænken (−61 A)</span>
+      </div>
+    </div>
+
+    <div class="panel pxpanel">
+      <div class="paneltitle">AKTIVE SYNERGIER</div>
+      <div class="synlist">
+        <div><span class="syn-dot good"></span><b>Holm + Bak</b> — Målscorer/Playmaker +4 A</div>
+        <div><span class="syn-dot good"></span><b>Lund + Vinter</b> — venstre flanke +3 A</div>
+        <div><span class="syn-dot good"></span><b>Holt (Anfører)</b> — naboer +1 alle</div>
+        <div><span class="syn-dot bad2"></span><b>Bak + Ravn</b> — overlap −2 M</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bench">
+  <div class="benchtitle">BÆNKEN — TRÆK EN SPILLER IND PÅ BANEN</div>
+  <div class="benchrow">
+    <div>
+      <div class="card dragging">
+        <div class="cardtop">
+          <svg class="jersey" viewBox="0 0 11 9"><g fill="var(--chip-fw)"><rect x="2" y="0" width="2" height="2"/><rect x="7" y="0" width="2" height="2"/><rect x="0" y="1" width="3" height="3"/><rect x="8" y="1" width="3" height="3"/><rect x="2" y="1" width="7" height="8"/></g></svg>
+          <span class="ovr">58</span><span class="poschip" style="background:var(--chip-fw)">FW</span>
+        </div>
+        <div class="pname">T. Iversen</div>
+        <div class="microstats"><span>A <b>62</b></span><span>M <b>31</b></span><span>F <b>15</b></span></div>
+        <div class="agebadge">20 år · Pot 74</div>
+      </div>
+      <div class="draglabel">TRÆKKES…</div>
+    </div>
+    <div class="card">
+      <div class="traiticon" title="Mentor">M</div>
+      <div class="cardtop">
+        <svg class="jersey" viewBox="0 0 11 9"><g fill="var(--chip-mf)"><rect x="2" y="0" width="2" height="2"/><rect x="7" y="0" width="2" height="2"/><rect x="0" y="1" width="3" height="3"/><rect x="8" y="1" width="3" height="3"/><rect x="2" y="1" width="7" height="8"/></g></svg>
+        <span class="ovr">49</span><span class="poschip" style="background:var(--chip-mf)">MF</span>
+      </div>
+      <div class="pname">H. Winther</div>
+      <div class="microstats"><span>A <b>30</b></span><span>M <b>52</b></span><span>F <b>35</b></span></div>
+      <div class="agebadge">32 år</div>
+    </div>
+    <div class="card">
+      <div class="cardtop">
+        <svg class="jersey" viewBox="0 0 11 9"><g fill="var(--chip-df)"><rect x="2" y="0" width="2" height="2"/><rect x="7" y="0" width="2" height="2"/><rect x="0" y="1" width="3" height="3"/><rect x="8" y="1" width="3" height="3"/><rect x="2" y="1" width="7" height="8"/></g></svg>
+        <span class="ovr">31</span><span class="poschip" style="background:var(--chip-df)">DF</span>
+      </div>
+      <div class="pname">R. Skov ✦ROOKIE</div>
+      <div class="microstats"><span>A <b>10</b></span><span>M <b>22</b></span><span>F <b>38</b></span></div>
+      <div class="agebadge">17 år · Pot 82</div>
+    </div>
+  </div>
+</div>
+
+<div class="mocknote">
+  Pixel-mockup — samme layout som det første mockup, tre pixel-retninger (skift øverst til højre).<br>
+  D bruger SNES-bevels og skaktern-græs · E har scanlines og fosfor-glød · F holder sig til Game Boys fire grønne nuancer.
+</div>
+
+<script>
+  document.querySelectorAll('.switcher button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.documentElement.dataset.theme = b.dataset.t;
+      document.querySelectorAll('.switcher button').forEach(function (x) {
+        x.classList.toggle('active', x === b);
+      });
+    });
+  });
+</script>
+</body>
+</html>
