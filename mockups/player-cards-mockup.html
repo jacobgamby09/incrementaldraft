@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynastiet — Playercards (Matchday-retning)</title>
+<style>
+  :root {
+    --bg: radial-gradient(1200px 800px at 50% -10%, #12203a 0%, #0b1220 55%, #070b14 100%);
+    --panel: rgba(255,255,255,.045);
+    --panel-border: rgba(255,255,255,.09);
+    --text: #e8eef7;
+    --text-dim: #93a1b8;
+    --accent: #a3e635;
+    --gold: #fbbf24;
+    --card-bg: linear-gradient(180deg, #1c2942 0%, #121c30 45%, #0d1526 100%);
+
+    --tier-bronze: #b0793f;
+    --tier-solv: #9fb2c8;
+    --tier-guld: #f0c34e;
+  }
+  @property --holo { syntax:"<angle>"; initial-value:0deg; inherits:false; }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { min-height:100vh; background:var(--bg); color:var(--text);
+    font-family:"Segoe UI", system-ui, sans-serif; padding:26px 30px 60px; }
+  h1 { font-size:17px; letter-spacing:.4px; margin-bottom:4px; }
+  .sub { color:var(--text-dim); font-size:13px; margin-bottom:30px; }
+  h2 { font-size:11px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase;
+    color:var(--text-dim); margin:38px 0 16px; }
+
+  .cardrow { display:flex; gap:26px; flex-wrap:wrap; align-items:flex-start; }
+  .cardcol { width:236px; }
+  .caption { text-align:center; margin-top:12px; font-size:12px; color:var(--text-dim); line-height:1.5; }
+  .caption b { color:var(--text); }
+
+  /* ============ FULDT PLAYERCARD ============ */
+  .pcard {
+    position:relative; width:236px; height:340px; border-radius:16px;
+    background:var(--card-bg); padding:14px 16px 12px;
+    border:3px solid var(--tier); box-shadow:0 10px 30px rgba(0,0,0,.5);
+    overflow:hidden; display:flex; flex-direction:column;
+    transition:transform .18s;
+  }
+  .pcard:hover { transform:translateY(-6px) scale(1.02); }
+  .pcard.bronze { --tier: var(--tier-bronze); }
+  .pcard.solv   { --tier: var(--tier-solv); }
+  .pcard.guld   { --tier: var(--tier-guld); }
+
+  .pcard.juvel {
+    border:3px solid transparent;
+    background:
+      var(--card-bg) padding-box,
+      conic-gradient(from var(--holo), #f0c34e, #a3e635, #38bdf8, #e879f9, #f0c34e) border-box;
+    animation: holo 4s linear infinite;
+  }
+  @keyframes holo { to { --holo:360deg; } }
+  .pcard.juvel::after {
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(115deg, transparent 30%, rgba(255,255,255,.16) 46%, transparent 60%);
+    background-size:260% 100%; animation:glare 3.2s ease-in-out infinite;
+  }
+  @keyframes glare { 0%,20% { background-position:130% 0; } 65%,100% { background-position:-60% 0; } }
+
+  .tierlabel { position:absolute; top:12px; right:-31px; transform:rotate(45deg);
+    font-size:9px; font-weight:800; letter-spacing:1.5px; padding:3px 34px;
+    background:var(--tier, var(--panel-border)); color:#0b1220; }
+  .juvel .tierlabel { background:linear-gradient(90deg,#f0c34e,#a3e635,#38bdf8); }
+
+  .ptop { display:flex; align-items:flex-start; justify-content:space-between; }
+  .povr { font-size:40px; font-weight:800; line-height:.95; }
+  .povr small { display:block; font-size:9px; font-weight:800; letter-spacing:1.6px; color:var(--text-dim); }
+  .ppos { font-size:11px; font-weight:800; background:#fb923c; color:#0b1220;
+    padding:3px 9px; border-radius:7px; margin-top:5px; display:inline-block; }
+  .ppot { text-align:right; font-size:19px; font-weight:800; color:var(--tier, var(--text-dim)); }
+  .juvel .ppot { background:linear-gradient(90deg,#f0c34e,#a3e635); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .ppot small { display:block; font-size:9px; font-weight:800; letter-spacing:1.6px; color:var(--text-dim); }
+
+  .pfigure { position:relative; height:128px; margin:8px -6px 4px; display:flex;
+    align-items:flex-end; justify-content:center; }
+  .pglow { position:absolute; inset:auto 0 -12px 0; height:110px;
+    background:radial-gradient(90px 70px at 50% 100%, var(--kit, #3b82f6) 0%, transparent 70%);
+    opacity:.4; }
+  .silhouette { position:relative; width:104px; height:118px; fill:#26344e; }
+  .juvel .silhouette { fill:#2d3d5c; }
+  .pnumber { position:absolute; bottom:26px; left:50%; transform:translateX(-50%);
+    font-size:26px; font-weight:800; color:rgba(232,238,247,.85); letter-spacing:1px; }
+
+  .pname { text-align:center; font-size:17px; font-weight:800; letter-spacing:.6px;
+    border-top:1px solid var(--panel-border); border-bottom:1px solid var(--panel-border);
+    padding:7px 0 6px; }
+  .pstats { display:flex; justify-content:center; gap:18px; padding:9px 0 4px;
+    font-size:14px; color:var(--text-dim); }
+  .pstats b { color:var(--text); font-size:16px; }
+  .ptrait { text-align:center; font-size:12px; font-weight:700; color:var(--accent);
+    padding:3px 0 5px; }
+  .pfoot { margin-top:auto; display:flex; justify-content:space-between;
+    font-size:10.5px; color:var(--text-dim); border-top:1px solid var(--panel-border); padding-top:8px; }
+
+  /* ---- uscoutet tilstand ---- */
+  .pcard.fog { --tier:#3a4964; border-style:dashed; }
+  .fog .silhouette { fill:#1a2438; }
+  .fog .pnumber { color:rgba(147,161,184,.4); }
+  .fogmark { position:absolute; bottom:34px; left:50%; transform:translateX(-50%);
+    font-size:44px; font-weight:800; color:rgba(147,161,184,.5); }
+  .fog .pstats, .fog .povr { color:var(--text-dim); }
+  .scoutbtn { margin:2px auto 0; display:block; background:var(--accent); color:#0b1220;
+    border:none; font-weight:800; font-size:11px; padding:7px 16px; border-radius:8px; cursor:pointer; }
+
+  /* ---- kompakt kontrast ---- */
+  .compactdemo { display:flex; gap:30px; align-items:center; flex-wrap:wrap; }
+  .minicard { width:118px; background:linear-gradient(180deg, rgba(30,41,59,.92), rgba(15,23,42,.94));
+    border:2px solid rgba(255,255,255,.14); border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,.45);
+    padding:7px 9px 6px; position:relative; }
+  .minicard .traiticon { position:absolute; top:-9px; right:-9px; width:22px; height:22px; border-radius:50%;
+    background:var(--accent); color:#0b1220; font-size:12px; display:flex; align-items:center;
+    justify-content:center; border:2px solid rgba(255,255,255,.14); }
+  .minicard .top { display:flex; justify-content:space-between; align-items:center; }
+  .minicard .ovr { font-size:24px; font-weight:800; }
+  .minicard .pos { font-size:10px; font-weight:800; color:#0b1220; background:#fb923c; padding:2px 7px; border-radius:6px; }
+  .minicard .nm { font-size:12.5px; font-weight:700; margin-top:3px; }
+  .minicard .ms { display:flex; gap:6px; font-size:10px; color:var(--text-dim); margin-top:3px; }
+  .minicard .ms b { color:var(--text); }
+  .minicard .fit { font-size:11px; letter-spacing:1px; color:var(--gold); margin-top:2px; }
+  .arrow { font-size:22px; color:var(--text-dim); }
+  .compactnote { max-width:420px; font-size:13px; color:var(--text-dim); line-height:1.6; }
+  .compactnote b { color:var(--text); }
+</style>
+</head>
+<body>
+
+<h1>Playercards — Matchday-retning (A)</h1>
+<div class="sub">Kortet er draftens objekt: rammen = potentiale-tier, tågen = scouting-status. Ingen fotos — silhuet, nummer og klubfarve-glød.</div>
+
+<h2>Draft-boardets fire tilstande + juvelen</h2>
+<div class="cardrow">
+
+  <div class="cardcol">
+    <div class="pcard fog">
+      <div class="tierlabel">USCOUTET</div>
+      <div class="ptop">
+        <div class="povr">55–68<small>OVR</small><span class="ppos" style="background:#4ade80">CM</span></div>
+        <div class="ppot">?–?<small>POT</small></div>
+      </div>
+      <div class="pfigure">
+        <div class="pglow" style="--kit:#3a4964"></div>
+        <svg class="silhouette" viewBox="0 0 104 118"><circle cx="52" cy="30" r="20"/><path d="M12 118 C12 76 30 60 52 60 C74 60 92 76 92 118 Z"/></svg>
+        <div class="fogmark">?</div>
+      </div>
+      <div class="pname">J. NØRGAARD</div>
+      <div class="pstats"><span>A <b>?</b></span><span>M <b>?</b></span><span>F <b>?</b></span></div>
+      <div class="ptrait" style="color:var(--text-dim)">Trait skjult</div>
+      <button class="scoutbtn">SCOUT · 1 RAPPORT</button>
+      <div class="pfoot"><span>17 år</span><span>#11 på boardet</span></div>
+    </div>
+    <div class="caption"><b>Uscoutet</b> — mediernes board ser kun intervaller.<br>Én rapport, og kortet transformerer.</div>
+  </div>
+
+  <div class="cardcol">
+    <div class="pcard bronze">
+      <div class="tierlabel">BRONZE</div>
+      <div class="ptop">
+        <div class="povr">34<small>OVR</small><span class="ppos" style="background:#38bdf8">RB</span></div>
+        <div class="ppot" >48<small>POT</small></div>
+      </div>
+      <div class="pfigure">
+        <div class="pglow" style="--kit:#b0793f"></div>
+        <svg class="silhouette" viewBox="0 0 104 118"><circle cx="52" cy="30" r="20"/><path d="M12 118 C12 76 30 60 52 60 C74 60 92 76 92 118 Z"/></svg>
+        <div class="pnumber">2</div>
+      </div>
+      <div class="pname">C. BECK</div>
+      <div class="pstats"><span>A <b>14</b></span><span>M <b>22</b></span><span>F <b>36</b></span></div>
+      <div class="ptrait" style="color:var(--text-dim)">Ingen trait</div>
+      <div class="pfoot"><span>18 år</span><span>#19 på boardet</span></div>
+    </div>
+    <div class="caption"><b>Fyld</b> (Pot 40-55) — bronzerammen lover ikke for meget.</div>
+  </div>
+
+  <div class="cardcol">
+    <div class="pcard solv">
+      <div class="tierlabel">SØLV</div>
+      <div class="ptop">
+        <div class="povr">38<small>OVR</small><span class="ppos" style="background:#4ade80">LM</span></div>
+        <div class="ppot">64<small>POT</small></div>
+      </div>
+      <div class="pfigure">
+        <div class="pglow" style="--kit:#9fb2c8"></div>
+        <svg class="silhouette" viewBox="0 0 104 118"><circle cx="52" cy="30" r="20"/><path d="M12 118 C12 76 30 60 52 60 C74 60 92 76 92 118 Z"/></svg>
+        <div class="pnumber">11</div>
+      </div>
+      <div class="pname">A. THOMSEN</div>
+      <div class="pstats"><span>A <b>31</b></span><span>M <b>34</b></span><span>F <b>18</b></span></div>
+      <div class="ptrait">✨ Playmaker</div>
+      <div class="pfoot"><span>17 år</span><span>#7 på boardet</span></div>
+    </div>
+    <div class="caption"><b>Solid</b> (Pot 55-70) — hæderlig starter om 3-4 sæsoner.</div>
+  </div>
+
+  <div class="cardcol">
+    <div class="pcard guld">
+      <div class="tierlabel">GULD</div>
+      <div class="ptop">
+        <div class="povr">41<small>OVR</small><span class="ppos" style="background:#818cf8">GK</span></div>
+        <div class="ppot">79<small>POT</small></div>
+      </div>
+      <div class="pfigure">
+        <div class="pglow" style="--kit:#f0c34e"></div>
+        <svg class="silhouette" viewBox="0 0 104 118"><circle cx="52" cy="30" r="20"/><path d="M12 118 C12 76 30 60 52 60 C74 60 92 76 92 118 Z"/></svg>
+        <div class="pnumber">1</div>
+      </div>
+      <div class="pname">S. HØJER</div>
+      <div class="pstats"><span>A <b>3</b></span><span>M <b>9</b></span><span>F <b>44</b></span></div>
+      <div class="ptrait">Ⓒ Anfører</div>
+      <div class="pfoot"><span>19 år</span><span>#3 på boardet</span></div>
+    </div>
+    <div class="caption"><b>Profil</b> (Pot 70-85) — guldrammen gør AI-klubberne sultne.</div>
+  </div>
+
+  <div class="cardcol">
+    <div class="pcard juvel">
+      <div class="tierlabel">JUVEL</div>
+      <div class="ptop">
+        <div class="povr">27<small>OVR</small><span class="ppos" style="background:#fb923c">ST</span></div>
+        <div class="ppot">88<small>POT</small></div>
+      </div>
+      <div class="pfigure">
+        <div class="pglow" style="--kit:#a3e635"></div>
+        <svg class="silhouette" viewBox="0 0 104 118"><circle cx="52" cy="30" r="20"/><path d="M12 118 C12 76 30 60 52 60 C74 60 92 76 92 118 Z"/></svg>
+        <div class="pnumber">9</div>
+      </div>
+      <div class="pname">M. LYKKE</div>
+      <div class="pstats"><span>A <b>33</b></span><span>M <b>12</b></span><span>F <b>6</b></span></div>
+      <div class="ptrait">⚽ Målscorer</div>
+      <div class="pfoot"><span>16 år</span><span>#22 på boardet (!)</span></div>
+    </div>
+    <div class="caption"><b>Juvelen</b> (Pot 85+) — holo-ramme og glans-sweep.<br>Mediet har ham som #22. Du ved bedre.</div>
+  </div>
+</div>
+
+<h2>Samme spiller, to kontekster</h2>
+<div class="compactdemo">
+  <div class="pcard guld" style="transform:scale(.92); transform-origin:left center;">
+    <div class="tierlabel">GULD</div>
+    <div class="ptop">
+      <div class="povr">64<small>OVR</small><span class="ppos" style="background:#fb923c">ST</span></div>
+      <div class="ppot">87<small>POT</small></div>
+    </div>
+    <div class="pfigure">
+      <div class="pglow" style="--kit:#a3e635"></div>
+      <svg class="silhouette" viewBox="0 0 104 118"><circle cx="52" cy="30" r="20"/><path d="M12 118 C12 76 30 60 52 60 C74 60 92 76 92 118 Z"/></svg>
+      <div class="pnumber">9</div>
+    </div>
+    <div class="pname">V. HOLM</div>
+    <div class="pstats"><span>A <b>71</b></span><span>M <b>34</b></span><span>F <b>16</b></span></div>
+    <div class="ptrait">⚽ Målscorer</div>
+    <div class="pfoot"><span>19 år · S3-årgang</span><span>XP +210 sidste sæson</span></div>
+  </div>
+  <div class="arrow">⟷</div>
+  <div>
+    <div class="minicard">
+      <div class="traiticon">⚽</div>
+      <div class="top"><span class="ovr">64</span><span class="pos">ST</span></div>
+      <div class="nm">V. Holm</div>
+      <div class="ms"><span>A <b>71</b></span><span>M <b>34</b></span><span>F <b>16</b></span></div>
+      <div class="fit">★★★★★☆</div>
+    </div>
+  </div>
+  <div class="compactnote">
+    <b>Fuldt kort</b> i draften og som detalje-visning (klik på en spiller
+    hvor som helst). <b>Kompakt kort</b> på banen og bænken — læsbarheden
+    vinder, når der står 14 mand på skærmen. Rammens tier-farve går igen som
+    en tynd kant på det kompakte kort, så juvelen også kan ses på banen.
+  </div>
+</div>
+
+</body>
+<script></script>
+</html>

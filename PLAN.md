@@ -51,6 +51,31 @@ Formations-skærmens krav løses i samme snit: `previewPlacement(trup,
 slot, spiller)` er en ren motor-funktion (mikrosekunder ved 14 spillere),
 så hover-preview kan køre på hver pointer-bevægelse.
 
+## Visuel retning (arbejdsbeslutning)
+
+**A · Matchday** — mørk stadion-nat, TV-grafik-æstetik, glaspaneler,
+neongrøn accent, guld til valuta. Valgt fordi glødende synergi-linjer,
+guld-plings og juice-laget har bedst vilkår på mørk baggrund, og de store
+tal står skarpest. Tokens og referencer: `mockups/formation-mockup.html`
+(tema A). Pixel art fravalgt pga. læsbarhed på tæt data
+(`mockups/formation-mockup-pixel.html` beholdes som reference).
+
+**Playercards** (`mockups/player-cards-mockup.html`):
+
+- **Kortet er ceremoni, ikke information** — fuldt kort i draften og som
+  detalje-visning (klik på spiller hvor som helst); kompakt kort på bane
+  og bænk, hvor læsbarheden vinder
+- **Ingen fotos** — silhuet + trøjenummer + klubfarve-glød (ingen
+  ansigts-asset-pipeline)
+- **Rammen = potentiale-tier**: fyld=bronze, solid=sølv, profil=guld,
+  juvel=animeret holo med glans-sweep. Sjældenhedsglæden er dermed koblet
+  direkte til scouting-systemet
+- **Uscoutede kort står i tåge** (interval-stats, grå stiplet ramme, "?")
+  og transformerer visuelt, når en scout-rapport bruges — scouting som
+  reveal-øjeblik
+- Tier-farven går igen som tynd kant på det kompakte kort, så juvelen
+  også kan ses på banen
+
 ## Projektstruktur
 
 ```
