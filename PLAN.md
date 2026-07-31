@@ -109,6 +109,63 @@ Milepæl efter trin 3: **kan man mærke om opstillings-fiflen er sjov?**
 Hvis nej, justeres synergier/traits FØR der bygges videre (jf.
 DESIGN.md's testspørgsmål 1).
 
+## Trin 1 — detaljeret plan (næste skridt)
+
+**Mål**: et kørende projekt med en kalibreret, testet kampmotor i ren TS.
+Ingen spilskærme endnu — fundamentet skal stå på beviseligt rigtige tal.
+
+### 1a. Scaffold
+
+- Vite + React 19 + TypeScript (strict mode)
+- Dependencies nu: `zustand`, `motion`, `@dnd-kit/core`, dev: `vitest`
+  (howler og idb-keyval installeres først når de bruges)
+- Mappestruktur: `src/engine` · `src/ui` · `src/content` · `tests`
+- Regel håndhævet fra dag ét: **ingen React-imports i `src/engine`**
+
+### 1b. Engine-kernen (ren TS)
+
+| Modul | Indhold |
+|---|---|
+| `engine/rng.ts` | Seedet PRNG (mulberry32) med fork af del-streams — determinisme er kontrakten |
+| `engine/types.ts` | `Player`, `Club`, `TeamLines`, `MatchResult`, `MatchEvent` |
+| `engine/match.ts` | Kampmodellen 1:1 fra `simulation/match_sim.py`: K=0,5 · p_konv=2,0 · p_mid=1,0 · chancepulje 8-12 · clamp 30-70% |
+| Event-listen | `{minut, type: kickoff/chance/goal/final, hold, spillerId}` — chancer fordeles sorteret over minut 1-90; målscorer vægtes efter ANG-bidrag (+Målscorer-trait). Dette er UI'ets afspilnings-kontrakt |
+
+`match.ts` tager holdlinjer (ANG/MID/FOR) som input — opstillings-beregning
+(slot-vægte, synergier, previewPlacement) hører til trin 2/3.
+
+### 1c. Paritetstests (Vitest — kalibreringen som CI-vagt)
+
+Kør 20-50k seedede kampe per scenario og assert mod Python-tallene
+(tolerancer sat så tests ikke flakker):
+
+| Test | Forventning |
+|---|---|
+| Jævnbyrdig | sejr 37% ±2 · uafgjort 26% ±2 · mål/kamp 2,50 ±0,15 |
+| +20% favorit | sejr 54% ±2 |
+| +50% favorit | sejr 73% ±2 · margin ≥4 ca. 10% |
+| Stat-paritet | +20 point i hhv. ANG/MID/FOR: hver delta i [1,5; 3,5] pp og indbyrdes spredning < 1,5 pp |
+| Determinisme | samme seed ⇒ identisk event-liste, byte for byte |
+| Hastighed | 10.000 kampe < 1 s (løs perf-vagt) |
+
+### 1d. Engine-konsol (lille dev-side)
+
+`npm run dev` viser en rå debug-side: "kør 10.000 kampe"-knap, der
+printer fordelingstabellen i browseren + afspiller én kamps event-liste
+som tekst. Beviser wiring engine→UI og gør motoren håndgribelig, uden at
+være en spilskærm.
+
+### Acceptkriterier for trin 1
+
+1. `npm test` grøn, inkl. hele paritetssuiten
+2. `npm run dev` kører engine-konsollen
+3. Nul React-imports i `src/engine` (håndhævet med ESLint-regel eller
+   simpel grep i CI)
+
+Derefter trin 2: sæsonmotor (liga-tabel, XP/loft, aldring, draft-generering)
+oven på samme testdisciplin — career_sim.py's targets bliver trin 2's
+paritetstests.
+
 ## Udskudt (bevidst)
 
 - Mobil-layout (touch virker via dnd-kit, men layoutet designes til
