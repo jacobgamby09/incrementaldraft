@@ -2,23 +2,26 @@
  *  XP/udvikling, aldring, pension, op-/nedrykning (spilleren er immun),
  *  drafts og sæson-finalisering. */
 import { advanceAiPicks, CLASS_SIZE, draftOrder, generateClass, rollQuality } from "./draft";
-import { ageAndDecline, develop, FACILITY_CEILING, seasonXp, shouldRetire } from "./development";
-import { CLUBS_PER_DIVISION, DIVISIONS, SQUAD_CAP } from "./divisions";
+import { ageAndDecline, develop, FACILITY_CEILING, seasonXp, shouldRetire, XP_RULES } from "./development";
+import { CLUBS_PER_DIVISION, DIVISIONS, SQUAD_CAP, SQUAD_TARGET } from "./divisions";
 import { ECON, salePrice } from "./economy";
 import { evaluate, resolveAssignment, scorersFromAssignment } from "./formation";
 import { pickXI, playerOvr, scorerCandidates, teamLines } from "./lineup";
 import { simulateMatch } from "./match";
 import { makePlayer } from "./player-gen";
 import type {
+  ActiveSeason,
   Club,
   DevelopmentOutcome,
   DraftState,
   FeedMatch,
   FinalizeReport,
-  PlayerMatchResult,
+  MatchTeam,
+  Player,
   Position,
   SeasonReport,
   TableRow,
+  TransferOffer,
   World,
 } from "./types";
 import { nextId, playerClub, playerDivisionIndex } from "./world";
@@ -66,47 +69,66 @@ function sortTable(rows: TableRow[]): TableRow[] {
   );
 }
 
-export function runSeason(world: World): SeasonReport {
-  const tables: TableRow[][] = [];
-  const playerDivIdx = playerDivisionIndex(world);
-  const playerResults: PlayerMatchResult[] = [];
-  const feedRounds: FeedMatch[][] = [];
-  let playerGoals = 0;
-  let playerWins = 0;
-  let playerDraws = 0;
+export const ROUNDS_PER_HALF = 7;
+export const TOTAL_ROUNDS = 14;
 
-  for (let d = 0; d < world.divisions.length; d++) {
-    const clubs = world.divisions[d];
-    const rows = new Map(clubs.map((c) => [c.id, emptyRow(c)]));
-    const lineups = clubs.map((club) => {
-      if (club.isPlayer) {
-        // Spillerklubben: gemt opstilling + synergier (formations-motoren)
-        const assignment = resolveAssignment(club);
-        const evaluation = evaluate(assignment);
-        return {
-          club,
-          xi: [...assignment.values()],
-          xpMult: evaluation.xpMult,
-          team: { lines: evaluation.lines, scorers: scorersFromAssignment(assignment) },
-        };
-      }
-      const xi = pickXI(club.squad);
+interface DivisionLineup {
+  club: Club;
+  xiIds: Set<string>;
+  xpMult: Record<string, number>;
+  team: MatchTeam;
+}
+
+/** Opstillinger bygges om ved hver halvleg, så transfervinduets køb og
+ *  re-opstilling faktisk påvirker anden halvdel. */
+function buildLineups(world: World, d: number, playerDivIdx: number): DivisionLineup[] {
+  return world.divisions[d].map((club) => {
+    if (club.isPlayer) {
+      const assignment = resolveAssignment(club);
+      const evaluation = evaluate(assignment);
       return {
         club,
-        xi,
-        xpMult: {} as Record<string, number>,
-        // I spillerens division får AI-klubber navngivne scorere (feedet viser dem)
-        team: {
-          lines: teamLines(xi),
-          scorers: d === playerDivIdx ? scorerCandidates(xi) : undefined,
-        },
+        xiIds: new Set([...assignment.values()].map((p) => p.id)),
+        xpMult: evaluation.xpMult,
+        team: { lines: evaluation.lines, scorers: scorersFromAssignment(assignment) },
       };
-    });
+    }
+    const xi = pickXI(club.squad);
+    return {
+      club,
+      xiIds: new Set(xi.map((p) => p.id)),
+      xpMult: {} as Record<string, number>,
+      // I spillerens division får AI-klubber navngivne scorere (feedet viser dem)
+      team: {
+        lines: teamLines(xi),
+        scorers: d === playerDivIdx ? scorerCandidates(xi) : undefined,
+      },
+    };
+  });
+}
 
-    const fixtures = makeFixtures(CLUBS_PER_DIVISION);
-    fixtures.forEach((round, roundIndex) => {
+/** Simulér runderne [fromRound, toRound) (0-indekseret) for alle divisioner. */
+function simulateRounds(world: World, active: ActiveSeason, fromRound: number, toRound: number): void {
+  const playerDivIdx = playerDivisionIndex(world);
+  const fixtures = makeFixtures(CLUBS_PER_DIVISION);
+  const roundsPlayed = toRound - fromRound;
+
+  for (let d = 0; d < world.divisions.length; d++) {
+    const lineups = buildLineups(world, d, playerDivIdx);
+    const rows = active.rows[d];
+
+    // XP efter spilletid i DENNE halvleg (jf. DESIGN.md: startere vokser mest)
+    for (const { club, xiIds, xpMult } of lineups) {
+      for (const p of club.squad) {
+        const share = roundsPlayed / XP_RULES.MATCHES;
+        const xp = seasonXp(xiIds.has(p.id), p.age, club.facilityTier) * share * (xpMult[p.id] ?? 1);
+        active.xp[p.id] = (active.xp[p.id] ?? 0) + xp;
+      }
+    }
+
+    for (let r = fromRound; r < toRound; r++) {
       const feedRound: FeedMatch[] = [];
-      for (const [h, a] of round) {
+      for (const [h, a] of fixtures[r]) {
         const home = lineups[h];
         const away = lineups[a];
         const result = simulateMatch(home.team, away.team, world.rng);
@@ -115,7 +137,7 @@ export function runSeason(world: World): SeasonReport {
 
         if (d === playerDivIdx) {
           feedRound.push({
-            round: roundIndex + 1,
+            round: r + 1,
             homeId: home.club.id,
             homeName: home.club.name,
             awayId: away.club.id,
@@ -149,62 +171,93 @@ export function runSeason(world: World): SeasonReport {
           rowA.points++;
         }
 
-        if (d === playerDivIdx && (home.club.isPlayer || away.club.isPlayer)) {
+        if (isPlayerMatch && d === playerDivIdx) {
           const isHome = home.club.isPlayer;
           const gf = isHome ? gh : ga;
           const against = isHome ? ga : gh;
-          playerResults.push({
-            round: roundIndex + 1,
+          active.playerResults.push({
+            round: r + 1,
             opponent: isHome ? away.club.name : home.club.name,
             goalsFor: gf,
             goalsAgainst: against,
             home: isHome,
           });
-          playerGoals += gf;
-          if (gf > against) playerWins++;
-          else if (gf === against) playerDraws++;
+          active.playerStats.goals += gf;
+          if (gf > against) active.playerStats.wins++;
+          else if (gf === against) active.playerStats.draws++;
         }
       }
-      if (d === playerDivIdx) feedRounds.push(feedRound);
-    });
-
-    tables.push(sortTable([...rows.values()]));
+      if (d === playerDivIdx) active.feed.push(feedRound);
+    }
   }
+}
 
-  // --- indkomst (kun spillerklubben har økonomi i trin 2) ---
+/** Kampindtægt (mål/sejre/uafgjorte) — præmien lægges til ved sæsonafslutning. */
+function matchIncome(stats: { goals: number; wins: number; draws: number }, divisionIndex: number): number {
+  const mult = ECON.DIV_MULT[divisionIndex];
+  return Math.round(
+    stats.goals * ECON.GOAL * mult + stats.wins * ECON.WIN * mult + stats.draws * ECON.DRAW * mult,
+  );
+}
+
+/** Første halvleg (runde 1-7). Kampindtægten udbetales med det samme, så
+ *  transfervinduet har noget at handle med. */
+export function beginSeason(world: World): ActiveSeason {
+  const playerDivIdx = playerDivisionIndex(world);
+  const active: ActiveSeason = {
+    rows: world.divisions.map((clubs) => new Map(clubs.map((c) => [c.id, emptyRow(c)]))),
+    feed: [],
+    playerStats: { goals: 0, wins: 0, draws: 0 },
+    playerResults: [],
+    xp: {},
+    offers: [],
+    paidGold: 0,
+  };
+  simulateRounds(world, active, 0, ROUNDS_PER_HALF);
+  active.paidGold = matchIncome(active.playerStats, playerDivIdx);
+  playerClub(world).gold += active.paidGold;
+  active.offers = generateOffers(world, playerDivIdx);
+  world.activeSeason = active;
+  return active;
+}
+
+/** Anden halvleg (runde 8-14) + sæsonafslutning: indkomst, udvikling,
+ *  aldring, pension, op-/nedrykning. */
+export function concludeSeason(world: World): SeasonReport {
+  const active = world.activeSeason;
+  if (!active) throw new Error("Ingen aktiv sæson — kald beginSeason først");
+  const playerDivIdx = playerDivisionIndex(world);
+
+  simulateRounds(world, active, ROUNDS_PER_HALF, TOTAL_ROUNDS);
+
+  const tables = active.rows.map((rows) => sortTable([...rows.values()]));
+  const feedRounds = [...active.feed].sort((a, b) => a[0].round - b[0].round);
+
+  // --- indkomst (kun spillerklubben har økonomi) ---
   const me = playerClub(world);
   const table = tables[playerDivIdx];
   const position = table.findIndex((r) => r.clubId === me.id) + 1;
   const mult = ECON.DIV_MULT[playerDivIdx];
   const income = {
-    goals: Math.round(playerGoals * ECON.GOAL * mult),
-    wins: Math.round(playerWins * ECON.WIN * mult),
-    draws: Math.round(playerDraws * ECON.DRAW * mult),
+    goals: Math.round(active.playerStats.goals * ECON.GOAL * mult),
+    wins: Math.round(active.playerStats.wins * ECON.WIN * mult),
+    draws: Math.round(active.playerStats.draws * ECON.DRAW * mult),
     prize: Math.round(ECON.PRIZES[position - 1] * mult),
     total: 0,
   };
   income.total = income.goals + income.wins + income.draws + income.prize;
-  me.gold += income.total;
+  // Første halvlegs kampindtægt er allerede udbetalt (ved beginSeason)
+  me.gold += income.total - active.paidGold;
 
-  // --- XP og udvikling (alle klubber, samme motor) ---
+  // --- udvikling: udmønt akkumuleret XP fra begge halvlege ---
   const harvest: DevelopmentOutcome[] = [];
   for (let d = 0; d < world.divisions.length; d++) {
     for (const club of world.divisions[d]) {
-      let xiIds: Set<string>;
-      let xpMult: Record<string, number> = {};
-      if (club.isPlayer) {
-        const assignment = resolveAssignment(club);
-        xiIds = new Set([...assignment.values()].map((p) => p.id));
-        xpMult = evaluate(assignment).xpMult; // Mentor: +50% XP til unge naboer
-      } else {
-        xiIds = new Set(pickXI(club.squad).map((p) => p.id));
-      }
       const ceiling = club.isPlayer
         ? FACILITY_CEILING[club.facilityTier - 1]
         : DIVISIONS[d].aiCeiling;
       for (const p of club.squad) {
-        const xp = seasonXp(xiIds.has(p.id), p.age, club.facilityTier) * (xpMult[p.id] ?? 1);
-        const outcome = develop(p, xp, ceiling);
+        const outcome = develop(p, active.xp[p.id] ?? 0, ceiling);
         if (club.isPlayer) harvest.push(outcome);
       }
     }
@@ -267,13 +320,14 @@ export function runSeason(world: World): SeasonReport {
   }
 
   world.lastTables = tables;
+  world.activeSeason = undefined;
 
   return {
     season: world.season,
     tables,
     playerDivisionIndex: playerDivIdx,
     playerPosition: position,
-    playerResults,
+    playerResults: active.playerResults,
     rounds: feedRounds,
     income,
     harvest: harvest.sort((a, b) => b.ovrAfter - a.ovrAfter),
@@ -283,7 +337,106 @@ export function runSeason(world: World): SeasonReport {
   };
 }
 
+/** Hele sæsonen i ét kald (uden interaktivt transfervindue) — bruges af
+ *  tests og batch-simuleringer. */
+export function runSeason(world: World): SeasonReport {
+  beginSeason(world);
+  return concludeSeason(world);
+}
+
 const PLAYER_IMMUNITY_TEXT = "FC Dynasti undgår nedrykning (næstdårligste rykker ned)";
+
+/* ============ transfervinduet ============ */
+
+export const TRANSFER = {
+  OFFER_SLOTS: 3,
+  /** Købspræmie oven på markedsværdien */
+  BUY_MARKUP: 1.4,
+  REROLL_COST: 50,
+} as const;
+
+export function offerPrice(player: Player, divisionIndex: number): number {
+  return Math.round(salePrice(player, divisionIndex) * TRANSFER.BUY_MARKUP);
+}
+
+export function rerollCost(divisionIndex: number): number {
+  return Math.round(TRANSFER.REROLL_COST * ECON.DIV_MULT[divisionIndex]);
+}
+
+/** Færdige spillere i peak-alderen: kendte stats, ingen udvikling tilbage
+ *  (jf. DESIGN.md — vinduet er "magt nu", draften er "fremtiden").
+ *
+ *  Prisspredning er bevidst: ét billigt tilbud skal være inden for rækkevidde
+ *  af halvlegens indtægt, det dyre kræver opsparing. */
+const OFFER_TIERS: [number, number][] = [
+  [0.0, 0.35], // billigt
+  [0.3, 0.7], // mellem
+  [0.6, 1.0], // dyrt
+];
+
+export function generateOffers(world: World, divisionIndex: number): TransferOffer[] {
+  const [lo, hi] = DIVISIONS[divisionIndex].typical;
+  const positions: Position[] = ["GK", "DF", "MF", "FW"];
+  const offers: TransferOffer[] = [];
+  for (let i = 0; i < TRANSFER.OFFER_SLOTS; i++) {
+    const [from, to] = OFFER_TIERS[i % OFFER_TIERS.length];
+    const pos = positions[world.rng.int(0, positions.length - 1)];
+    const ovr = world.rng.int(Math.round(lo + (hi - lo) * from), Math.round(lo + (hi - lo) * to));
+    const age = world.rng.int(26, 29);
+    const player = makePlayer(nextId(world), pos, ovr, age, ovr + 1, world.rng, 0.3);
+    offers.push({ player, price: offerPrice(player, divisionIndex) });
+  }
+  return offers;
+}
+
+export type BuyResult = { ok: true } | { ok: false; reason: string };
+
+export function buyOffer(world: World, offerIndex: number): BuyResult {
+  const active = world.activeSeason;
+  if (!active) return { ok: false, reason: "Ingen aktiv sæson" };
+  const offer = active.offers[offerIndex];
+  if (!offer) return { ok: false, reason: "Tilbuddet findes ikke" };
+  const me = playerClub(world);
+  if (me.gold < offer.price) return { ok: false, reason: "Ikke nok guld" };
+  if (me.squad.length >= SQUAD_CAP) return { ok: false, reason: "Truppen er fuld — sælg en spiller først" };
+  me.gold -= offer.price;
+  me.squad.push(offer.player);
+  active.offers.splice(offerIndex, 1);
+  return { ok: true };
+}
+
+export function rerollOffers(world: World): BuyResult {
+  const active = world.activeSeason;
+  if (!active) return { ok: false, reason: "Ingen aktiv sæson" };
+  const divisionIndex = playerDivisionIndex(world);
+  const cost = rerollCost(divisionIndex);
+  const me = playerClub(world);
+  if (me.gold < cost) return { ok: false, reason: "Ikke nok guld til reroll" };
+  me.gold -= cost;
+  active.offers = generateOffers(world, divisionIndex);
+  return { ok: true };
+}
+
+/** Sælg en spiller fra truppen (også muligt i vinduet, for at gøre plads). */
+export function sellPlayer(world: World, playerId: string): BuyResult {
+  const me = playerClub(world);
+  const divisionIndex = playerDivisionIndex(world);
+  const player = me.squad.find((p) => p.id === playerId);
+  if (!player) return { ok: false, reason: "Spilleren findes ikke" };
+  const counts: Record<Position, number> = { GK: 0, DF: 0, MF: 0, FW: 0 };
+  for (const p of me.squad) counts[p.pos]++;
+  if (counts[player.pos] <= MIN_QUOTA[player.pos]) {
+    return { ok: false, reason: `Du skal beholde mindst ${MIN_QUOTA[player.pos]} ${player.pos}` };
+  }
+  me.gold += salePrice(player, divisionIndex);
+  me.squad = me.squad.filter((p) => p.id !== playerId);
+  if (me.lineup) {
+    for (const [slotId, pid] of Object.entries(me.lineup)) {
+      if (pid === playerId) delete me.lineup[slotId];
+    }
+  }
+  return { ok: true };
+}
 
 export interface StandingEntry {
   clubId: string;
@@ -293,13 +446,19 @@ export interface StandingEntry {
   goalsAgainst: number;
 }
 
-/** Løbende stilling efter de første `upToRound` runder af feedet (sorteret). */
+/** Løbende stilling efter de første `upToRound` runder af feedet (sorteret).
+ *  Alle klubber i divisionen er med fra runde 0, så tabellen aldrig er tom. */
 export function standingsAfter(rounds: FeedMatch[][], upToRound: number): StandingEntry[] {
   const byId = new Map<string, StandingEntry>();
   const ensure = (id: string, name: string): StandingEntry => {
     if (!byId.has(id)) byId.set(id, { clubId: id, name, points: 0, goalsFor: 0, goalsAgainst: 0 });
     return byId.get(id)!;
   };
+  // Seed med alle klubber fra første runde (hele divisionen spiller hver runde)
+  for (const m of rounds[0] ?? []) {
+    ensure(m.homeId, m.homeName);
+    ensure(m.awayId, m.awayName);
+  }
   for (const round of rounds.slice(0, upToRound)) {
     for (const m of round) {
       const home = ensure(m.homeId, m.homeName);
@@ -382,8 +541,8 @@ export function finalizeSeason(world: World, ): FinalizeReport {
         }
       }
 
-      // Auto-salg ned til trup-loftet (kvote-sikkert, billigste først)
-      while (club.squad.length > SQUAD_CAP) {
+      // Auto-salg ned til mål-trupstørrelsen (kvote-sikkert, billigste først)
+      while (club.squad.length > SQUAD_TARGET) {
         const counts: Record<Position, number> = { GK: 0, DF: 0, MF: 0, FW: 0 };
         for (const p of club.squad) counts[p.pos]++;
         const sellable = club.squad

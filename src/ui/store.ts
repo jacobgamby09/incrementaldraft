@@ -1,51 +1,83 @@
 import { create } from "zustand";
 import { advanceAiPicks, playerPick } from "../engine/draft";
 import { autoAssign } from "../engine/formation";
-import { finalizeSeason, runSeason, startDrafts } from "../engine/season";
+import {
+  beginSeason,
+  buyOffer,
+  concludeSeason,
+  finalizeSeason,
+  rerollOffers,
+  sellPlayer,
+  startDrafts,
+} from "../engine/season";
 import type { DraftState, FinalizeReport, SeasonReport, World } from "../engine/types";
 import { createWorld, playerClub, playerDivisionIndex } from "../engine/world";
 
-export type Phase = "ready" | "feed" | "harvest" | "draft" | "draft-done";
+export type Phase = "ready" | "feed" | "window" | "harvest" | "draft" | "draft-done";
 
 interface GameState {
   version: number;
   world: World;
   phase: Phase;
+  /** Hvilken halvleg feedet viser */
+  half: 1 | 2;
   report: SeasonReport | null;
   draft: DraftState | null;
   finalize: FinalizeReport | null;
+  notice: string | null;
 
   newWorld(seed: number): void;
   playSeason(): void;
+  openWindow(): void;
+  playSecondHalf(): void;
   toHarvest(): void;
   goToDraft(): void;
   pick(prospectId: string): void;
   finishSeason(): void;
-  /** Placér spiller i slot (swap-logik: fra bænk fortrænges beboeren, fra bane byttes) */
   placePlayer(slotId: string, playerId: string): void;
   autoFillLineup(): void;
+  buy(offerIndex: number): void;
+  reroll(): void;
+  sell(playerId: string): void;
 }
 
 export const useGame = create<GameState>((set, get) => ({
   version: 0,
   world: createWorld(1),
   phase: "ready",
+  half: 1,
   report: null,
   draft: null,
   finalize: null,
+  notice: null,
 
   newWorld: (seed) =>
-    set({ world: createWorld(seed), phase: "ready", report: null, draft: null, finalize: null, version: get().version + 1 }),
+    set({
+      world: createWorld(seed),
+      phase: "ready",
+      half: 1,
+      report: null,
+      draft: null,
+      finalize: null,
+      notice: null,
+      version: get().version + 1,
+    }),
 
   playSeason: () => {
     const { world, version } = get();
-    const report = runSeason(world);
-    set({ report, phase: "feed", version: version + 1 });
+    beginSeason(world);
+    set({ report: null, phase: "feed", half: 1, version: version + 1 });
   },
 
-  toHarvest: () => {
-    set({ phase: "harvest", version: get().version + 1 });
+  openWindow: () => set({ phase: "window", version: get().version + 1 }),
+
+  playSecondHalf: () => {
+    const { world, version } = get();
+    const report = concludeSeason(world);
+    set({ report, phase: "feed", half: 2, version: version + 1 });
   },
+
+  toHarvest: () => set({ phase: "harvest", version: get().version + 1 }),
 
   goToDraft: () => {
     const { world, version } = get();
@@ -67,7 +99,7 @@ export const useGame = create<GameState>((set, get) => ({
   finishSeason: () => {
     const { world, version } = get();
     const finalize = finalizeSeason(world);
-    set({ finalize, phase: "ready", draft: null, version: version + 1 });
+    set({ finalize, phase: "ready", half: 1, draft: null, version: version + 1 });
   },
 
   placePlayer: (slotId, playerId) => {
@@ -90,5 +122,23 @@ export const useGame = create<GameState>((set, get) => ({
     const me = playerClub(world);
     me.lineup = autoAssign(me.squad);
     set({ version: version + 1 });
+  },
+
+  buy: (offerIndex) => {
+    const { world, version } = get();
+    const result = buyOffer(world, offerIndex);
+    set({ notice: result.ok ? null : result.reason, version: version + 1 });
+  },
+
+  reroll: () => {
+    const { world, version } = get();
+    const result = rerollOffers(world);
+    set({ notice: result.ok ? null : result.reason, version: version + 1 });
+  },
+
+  sell: (playerId) => {
+    const { world, version } = get();
+    const result = sellPlayer(world, playerId);
+    set({ notice: result.ok ? null : result.reason, version: version + 1 });
   },
 }));

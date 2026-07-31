@@ -87,7 +87,7 @@ function StatRow({ label, value, ghost, max, note }: { label: string; value: num
   );
 }
 
-export function FormationScreen() {
+export function FormationScreen({ hideSeasonButton = false }: { hideSeasonButton?: boolean } = {}) {
   useGame((s) => s.version);
   const world = useGame((s) => s.world);
   const placePlayer = useGame((s) => s.placePlayer);
@@ -218,7 +218,9 @@ export function FormationScreen() {
           </div>
 
           <div style={{ display: "flex", gap: 10 }}>
-            <button className="md-btn" onClick={playSeason}>Spil sæson {world.season} ▶</button>
+            {!hideSeasonButton && (
+              <button className="md-btn" onClick={playSeason}>Spil sæson {world.season} ▶</button>
+            )}
             <button className="md-btn2" onClick={autoFillLineup}>Auto-opstilling</button>
           </div>
         </div>

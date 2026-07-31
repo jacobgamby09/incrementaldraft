@@ -11,6 +11,9 @@ export const ECON = {
   /** Økonomi-multiplier per division (index 0 = Division 1) */
   DIV_MULT: [40, 16, 6, 2.5, 1],
   FREE_AGENT_COST: 150,
+  /** Startkapital i division 5-skala. Nok til ét billigt vindueskøb i sæson 1,
+   *  så transfervinduet er meningsfuldt fra begyndelsen. */
+  STARTING_GOLD: 400,
 } as const;
 
 export function ageFactor(age: number): number {

@@ -245,13 +245,21 @@ man ser score.
 Sæson-skærmen auto-genererer én sætning per tendens ("I blev udspillet på
 midtbanen i 9 af 14 kampe").
 
-### De 10 sekunder: simulér øjeblikkeligt, afspil som drama
+### Sæson-feedet: simulér øjeblikkeligt, afspil som drama
 
-Kampen afgøres på et millisekund; de 10 sekunder er iscenesættelse.
-Hurtig minut-ticker, kun nøgle-events: "23' — CHANCE! Holm… FORBI" /
-"41' — MÅÅÅL! Holm". **Missede chancer skal vises** — de gør variansen
-følt i stedet for mistænkelig ("vi skabte nok, vi var uskarpe" kan ses
-med egne øjne). Mål plinger guld ind live.
+Sæsonen afvikles som et **rullende resultat-feed**, runde for runde
+(~2 sek/runde, med pause og 1×/2×/4× samt spol-til-slut):
+
+- Resultat-kort glider ind øverst: rundenummer, S/U/N-badge, modstander
+  (H/U), farvet score og **egne målscorere med minuttal**
+- **Live ligatabel** ved siden af, der omrokerer sig animeret runde for
+  runde med oprykningszone og nedrykningszone markeret
+- Løbende W/U/T/point-tally, placering med ↑/↓ og **guld der drypper**
+  per mål og sejr
+- **Klik på et kort** → kampens fulde event-ticker: "23' Chance — Holm …
+  forbi" / "41' MÅÅÅL! Holm (1-0)". **Missede chancer vises** — de gør
+  variansen følt i stedet for mistænkelig
+- Sæsonen er delt i to halvlege à 7 runder med transfervinduet imellem
 
 Ingen interaktion under kampe. Skader vises som drama ("Jensen ude resten
 af sæsonen") — de gør næste opstilling til et nyt puslespil, de kræver
@@ -345,12 +353,22 @@ fodrer direkte "vind nu vs. udvikl"-dilemmaet.
 
 Midtvejs i sæsonen (efter kamp 7) pauser sæsonen ved ét planlagt beat:
 
-- **Butik, ikke draft**: 3-4 åbne slots med spillere i peak-alderen —
+- **Butik, ikke draft**: 3 åbne slots med spillere i peak-alderen (26-29) —
   kendte stats, øjeblikkelig effekt, ingen udvikling tilbage, faldende
   gensalgsværdi. Betales med guld. **Reroll mod guld.**
+- **Prisspredning er bevidst**: tilbuddene rulles fra tre bånd (billigt /
+  mellem / dyrt), så mindst ét køb er inden for rækkevidde af halvlegens
+  indtægt, mens det dyre kræver opsparing.
+- **Første halvlegs kampindtægt udbetales ved halvtid** — ellers ville
+  vinduet være tomt teater i tidlige sæsoner. Præmien kommer først til sidst.
+- **Startkapital** (400 i div 5-skala) sikrer, at vinduet er meningsfuldt
+  allerede i sæson 1.
+- **Trup: 18 hård grænse, trimmes til 16 efter draften** — der er altid
+  plads til køb i vinduet.
 - Tilbud er flygtige ("kun i dette vindue") så hamstring på tværs af
   sæsoner taber værdi; priser følger liga-niveau.
-- Efter køb: re-opstilling — sæsonens andet puslespils-beat.
+- Efter køb: re-opstilling — sæsonens andet puslespils-beat. Anden halvdel
+  simuleres først EFTER vinduet, så købene faktisk påvirker resultatet.
 - Kontrasten til draften er pointen: draften er lotterikuponer, vinduet er
   kontant afregning. Begge skal være levedygtige (alders/vækst-aksen
   balancerer det næsten selv).

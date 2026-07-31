@@ -100,6 +100,28 @@ export interface DraftOrderHints {
   relegatedInIds: string[];
 }
 
+/** Tilbud i transfervinduet: færdig peak-spiller til guldpris. */
+export interface TransferOffer {
+  player: Player;
+  price: number;
+}
+
+/** Igangværende sæson (mellem beginSeason og concludeSeason) — muliggør
+ *  transfervinduet midtvejs: anden halvdel simuleres først EFTER vinduet. */
+export interface ActiveSeason {
+  /** Akkumulerede tabelrækker per division */
+  rows: Map<string, TableRow>[];
+  /** Feed-runder spillet indtil videre (spillerens division) */
+  feed: FeedMatch[][];
+  playerStats: { goals: number; wins: number; draws: number };
+  playerResults: PlayerMatchResult[];
+  /** Akkumuleret XP per spiller-id (udmøntes ved sæsonafslutning) */
+  xp: Record<string, number>;
+  offers: TransferOffer[];
+  /** Guld allerede udbetalt i denne sæson (første halvlegs dryp) */
+  paidGold: number;
+}
+
 export interface World {
   season: number;
   /** divisions[0] = Division 1 (top) … divisions[4] = Division 5 */
@@ -111,6 +133,7 @@ export interface World {
   draftHints: DraftOrderHints[];
   idCounter: number;
   rng: RNG;
+  activeSeason?: ActiveSeason;
 }
 
 /* ============ sæson-rapport (høsten) ============ */

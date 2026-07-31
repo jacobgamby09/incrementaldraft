@@ -5,8 +5,21 @@ import { advanceAiPicks, generateClass, playerPick, CLASS_SIZE } from "../src/en
 import { DIVISIONS } from "../src/engine/divisions";
 import { pickXI, playerOvr } from "../src/engine/lineup";
 import { createRng } from "../src/engine/rng";
-import { finalizeSeason, makeFixtures, runSeason, standingsAfter, startDrafts } from "../src/engine/season";
-import type { DraftState, World } from "../src/engine/types";
+import { salePrice } from "../src/engine/economy";
+import { evaluate, resolveAssignment } from "../src/engine/formation";
+import {
+  beginSeason,
+  buyOffer,
+  concludeSeason,
+  finalizeSeason,
+  makeFixtures,
+  rerollOffers,
+  runSeason,
+  sellPlayer,
+  standingsAfter,
+  startDrafts,
+} from "../src/engine/season";
+import type { DraftState, Player, World } from "../src/engine/types";
 import { createWorld, playerClub, playerDivisionIndex } from "../src/engine/world";
 
 /** Afvikl spillerens draft automatisk (AI-logik for spillerens picks). */
@@ -161,6 +174,185 @@ describe("sæson-feedet", () => {
         expect(entry.points).toBeGreaterThanOrEqual(prev.get(entry.clubId) ?? 0);
         prev.set(entry.clubId, entry.points);
       }
+    }
+  });
+});
+
+describe("to halvlege og transfervinduet", () => {
+  it("beginSeason spiller 7 runder og åbner 3 tilbud", () => {
+    const world = createWorld(81);
+    const active = beginSeason(world);
+    expect(active.feed.length).toBe(7);
+    expect(active.offers.length).toBe(3);
+    expect(world.activeSeason).toBe(active);
+    for (const round of active.feed) {
+      expect(round.length).toBe(4);
+      expect(round.filter((m) => m.isPlayerMatch).length).toBe(1);
+    }
+  });
+
+  it("første halvlegs kampindtægt udbetales ved halvtid, så vinduet kan bruges", () => {
+    const world = createWorld(82);
+    const me = playerClub(world);
+    const before = me.gold;
+    const active = beginSeason(world);
+    expect(active.paidGold).toBeGreaterThan(0);
+    expect(me.gold).toBe(before + active.paidGold);
+    // Det billigste tilbud skal være til at betale ved halvtid i sæson 1
+    const cheapest = Math.min(...active.offers.map((o) => o.price));
+    expect(me.gold).toBeGreaterThanOrEqual(cheapest);
+
+    // Ingen dobbeltudbetaling: samlet indtægt matcher guldtilvæksten
+    const report = concludeSeason(world);
+    expect(me.gold).toBe(before + report.income.total);
+  });
+
+  it("standingsAfter(0) viser alle 8 klubber med 0 point", () => {
+    const world = createWorld(84);
+    const active = beginSeason(world);
+    const zero = standingsAfter(active.feed, 0);
+    expect(zero.length).toBe(8);
+    for (const entry of zero) expect(entry.points).toBe(0);
+  });
+
+  it("tilbud er peak-alder, prissat over markedsværdi", () => {
+    const world = createWorld(83);
+    const active = beginSeason(world);
+    for (const offer of active.offers) {
+      expect(offer.player.age).toBeGreaterThanOrEqual(26);
+      expect(offer.player.age).toBeLessThanOrEqual(29);
+      // Ingen udvikling tilbage af betydning
+      expect(offer.player.potential - playerOvr(offer.player)).toBeLessThanOrEqual(2);
+      expect(offer.price).toBeGreaterThan(salePrice(offer.player, 4));
+    }
+  });
+
+  it("køb trækker guld og lægger spilleren i truppen; for lidt guld afvises", () => {
+    const world = createWorld(87);
+    const active = beginSeason(world);
+    const me = playerClub(world);
+    me.gold = 0;
+    expect(buyOffer(world, 0).ok).toBe(false);
+
+    me.gold = 100000;
+    const before = me.squad.length;
+    const target = active.offers[0].player.id;
+    const price = active.offers[0].price;
+    expect(buyOffer(world, 0).ok).toBe(true);
+    expect(me.squad.length).toBe(before + 1);
+    expect(me.squad.some((p) => p.id === target)).toBe(true);
+    expect(me.gold).toBe(100000 - price);
+    expect(active.offers.length).toBe(2);
+  });
+
+  it("tilbud er prisspredte, og der er plads i truppen til køb", () => {
+    const world = createWorld(85);
+    // Kør en fuld sæson + draft + finalize, så truppen er trimmet
+    runSeason(world);
+    autoDraft(world, startDrafts(world));
+    finalizeSeason(world);
+    const me = playerClub(world);
+    expect(me.squad.length).toBeLessThanOrEqual(16);
+    expect(me.squad.length).toBeLessThan(18); // plads til mindst ét køb
+
+    const active = beginSeason(world);
+    const prices = active.offers.map((o) => o.price).sort((a, b) => a - b);
+    expect(prices[0]).toBeLessThan(prices[2]); // spredning, ikke tre ens
+  });
+
+  it("køb i vinduet påvirker anden halvleg: holdstyrken stiger", () => {
+    const world = createWorld(89);
+    beginSeason(world);
+    const me = playerClub(world);
+    const linesBefore = evaluate(resolveAssignment(me)).lines;
+    // Indsæt en overlegen spiller og stil ham op
+    me.gold = 1e6;
+    const star: Player = {
+      id: "star", name: "Stjernen", pos: "FW", age: 27,
+      attack: 95, midfield: 40, defense: 10, potential: 95,
+    };
+    me.squad.push(star);
+    me.lineup = { ...me.lineup, ST1: "star" };
+    const linesAfter = evaluate(resolveAssignment(me)).lines;
+    expect(linesAfter.attack).toBeGreaterThan(linesBefore.attack);
+
+    const report = concludeSeason(world);
+    expect(report.rounds.length).toBe(14);
+    // Stjernen har spillet 7 runder og bør have scoret
+    const starGoals = report.rounds
+      .flat()
+      .filter((m) => m.isPlayerMatch)
+      .flatMap((m) => m.events ?? [])
+      .filter((e) => e.type === "goal" && e.scorerId === "star");
+    expect(starGoals.length).toBeGreaterThan(0);
+  });
+
+  it("salg kan ikke bryde positions-kvoterne", () => {
+    const world = createWorld(91);
+    beginSeason(world);
+    const me = playerClub(world);
+    const keepers = me.squad.filter((p) => p.pos === "GK");
+    expect(keepers.length).toBe(2);
+    // Første GK-salg afvises (kvote = 2)
+    expect(sellPlayer(world, keepers[0].id).ok).toBe(false);
+    expect(me.squad.filter((p) => p.pos === "GK").length).toBe(2);
+  });
+
+  it("reroll koster guld og giver nye tilbud", () => {
+    const world = createWorld(93);
+    const active = beginSeason(world);
+    const me = playerClub(world);
+    const idsBefore = active.offers.map((o) => o.player.id);
+    me.gold = 0;
+    expect(rerollOffers(world).ok).toBe(false);
+    me.gold = 5000;
+    expect(rerollOffers(world).ok).toBe(true);
+    expect(me.gold).toBeLessThan(5000);
+    expect(world.activeSeason!.offers.map((o) => o.player.id)).not.toEqual(idsBefore);
+  });
+
+  it("XP fordeles efter spilletid i BEGGE halvlege (halv bænk + halv starter)", () => {
+    // Reference: samme spiller på bænken hele sæsonen, og som starter hele sæsonen
+    const benchAllSeason = (() => {
+      const w = createWorld(97);
+      beginSeason(w);
+      const me = playerClub(w);
+      const benched = me.squad.find((p) => !Object.values(me.lineup!).includes(p.id))!;
+      const report = concludeSeason(w);
+      return report.harvest.find((h) => h.playerId === benched.id)!.xp;
+    })();
+
+    const promotedAtHalftime = (() => {
+      const w = createWorld(97);
+      beginSeason(w);
+      const me = playerClub(w);
+      const benched = me.squad.find((p) => !Object.values(me.lineup!).includes(p.id))!;
+      me.lineup = { ...me.lineup, CM1: benched.id }; // starter i 2. halvleg
+      const report = concludeSeason(w);
+      return report.harvest.find((h) => h.playerId === benched.id)!.xp;
+    })();
+
+    // Halvt bænk + halvt starter ligger midt imellem — og starter giver mest
+    expect(promotedAtHalftime).toBeGreaterThan(benchAllSeason);
+    expect(promotedAtHalftime).toBeLessThan(benchAllSeason * 3.4); // ikke fuld starter-sæson
+    expect(world0Undefined()).toBe(true);
+  });
+
+  function world0Undefined(): boolean {
+    const w = createWorld(98);
+    beginSeason(w);
+    concludeSeason(w);
+    return w.activeSeason === undefined;
+  }
+
+  it("runSeason (uden vindue) svarer stadig til 14 runder", () => {
+    const world = createWorld(99);
+    const report = runSeason(world);
+    expect(report.rounds.length).toBe(14);
+    expect(report.rounds[0][0].round).toBe(1);
+    expect(report.rounds[13][0].round).toBe(14);
+    for (const row of report.tables[report.playerDivisionIndex]) {
+      expect(row.played).toBe(14);
     }
   });
 });

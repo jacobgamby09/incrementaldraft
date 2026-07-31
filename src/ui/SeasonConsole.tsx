@@ -4,6 +4,7 @@ import type { DraftProspect, TableRow } from "../engine/types";
 import { playerClub, playerDivisionIndex } from "../engine/world";
 import { FormationScreen } from "./FormationScreen";
 import { SeasonFeed } from "./SeasonFeed";
+import { TransferWindow } from "./TransferWindow";
 import { useGame } from "./store";
 
 const S: Record<string, React.CSSProperties> = {
@@ -264,6 +265,7 @@ export function SeasonConsole() {
       )}
 
       {phase === "feed" && <SeasonFeed />}
+      {phase === "window" && <TransferWindow />}
       {phase === "harvest" && <HarvestView />}
       {(phase === "draft" || phase === "draft-done") && <DraftBoard />}
     </div>

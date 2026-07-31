@@ -212,6 +212,40 @@ body {
   margin-top: 10px; padding: 10px 12px; border-top: 1px solid var(--panel-border);
   font-family: Consolas, monospace; font-size: 12px; line-height: 1.8; color: var(--text-dim);
 }
+/* ---- live ligatabel ---- */
+.live-table { display: flex; flex-direction: column; gap: 2px; }
+.lt-row {
+  display: grid; grid-template-columns: 22px 1fr 26px 34px 30px;
+  align-items: center; gap: 6px; padding: 5px 7px; border-radius: 6px;
+  font-size: 12.5px; border-left: 3px solid transparent;
+}
+.lt-row.me { background: rgba(163, 230, 53, 0.12); font-weight: 800; }
+.lt-row.promo { border-left-color: var(--accent); }
+.lt-row.releg { border-left-color: var(--danger); }
+.lt-pos { color: var(--text-dim); font-weight: 800; }
+.lt-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lt-num { text-align: right; color: var(--text-dim); font-size: 11.5px; }
+.lt-pts { text-align: right; font-weight: 800; }
+.lt-legend { display: flex; gap: 14px; margin-top: 9px; font-size: 10px; color: var(--text-dim); }
+.lt-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; }
+.lt-legend i.promo { background: var(--accent); }
+.lt-legend i.releg { background: var(--danger); }
+
+/* ---- transfervinduet ---- */
+.offer-card {
+  width: 150px; background: linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.94));
+  border: 2px solid var(--card-border); border-radius: 12px; padding: 11px 12px 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+.offer-card.tier-solv { border-color: var(--tier-solv); }
+.offer-card.tier-guld { border-color: var(--tier-guld); }
+.offer-top { display: flex; align-items: center; gap: 7px; }
+.offer-ovr { font-size: 26px; font-weight: 800; line-height: 1; }
+.offer-age { margin-left: auto; font-size: 10px; color: var(--text-dim); font-weight: 700; }
+.offer-name { font-size: 13.5px; font-weight: 700; margin: 5px 0 4px; }
+.offer-trait { font-size: 11px; color: var(--accent); margin: 6px 0 9px; min-height: 15px; }
+.offer-buy { width: 100%; padding: 8px 0; font-size: 12.5px; border-radius: 8px; }
+
 .feed-tally { display: flex; justify-content: space-between; text-align: center; }
 .feed-tally b { display: block; font-size: 24px; }
 .feed-tally span { font-size: 9px; letter-spacing: 1px; color: var(--text-dim); font-weight: 800; }

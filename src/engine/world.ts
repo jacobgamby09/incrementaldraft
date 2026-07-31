@@ -1,6 +1,7 @@
 /** Verdens-generering: 5 divisioner × 8 klubber, fuld persistens (DESIGN.md). */
 import { CLUB_IDENTITIES } from "../content/names";
 import { CLUBS_PER_DIVISION, DIVISIONS } from "./divisions";
+import { ECON } from "./economy";
 import { rollQuality } from "./draft";
 import { makePlayer } from "./player-gen";
 import { createRng } from "./rng";
@@ -66,7 +67,7 @@ export function createWorld(seed: number): World {
         color: identity.color,
         isPlayer,
         squad: [],
-        gold: 0,
+        gold: isPlayer ? ECON.STARTING_GOLD : 0,
         facilityTier: 1,
       };
       club.squad = genSquad(world, d, isPlayer);

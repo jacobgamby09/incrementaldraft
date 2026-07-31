@@ -18,4 +18,8 @@ export const DIVISIONS: DivisionSpec[] = [
 ];
 
 export const CLUBS_PER_DIVISION = 8;
-export const SQUAD_CAP = 16;
+/** Hård grænse for trupstørrelse (kan udvides via talent-træet senere). */
+export const SQUAD_CAP = 18;
+/** Efter draften trimmes trupper ned hertil, så der altid er plads til
+ *  køb i transfervinduet. */
+export const SQUAD_TARGET = 16;
