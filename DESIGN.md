@@ -502,6 +502,50 @@ Spillere har udviklingskurver: vækst til peak (~27), derefter fald, pension
 det er noget truppen kræver. Temaet leverer selv grunden til at drafte for
 evigt; intet skal opfindes.
 
+## Verdens-strukturen (1.0)
+
+**Hele verden simuleres fuldt, hver sæson.** Kampe koster mikrosekunder
+(harnesset kører tusindvis per sekund), så der er ingen grund til bobler
+eller abstraktion — og fuld persistens er dét, der gør "the one that got
+away" mulig: juvelen, AI'en snuppede, bliver ved med at eksistere, udvikle
+sig og møde dig igen, uanset hvem der rykker op hvornår.
+
+| | Tal |
+|---|---|
+| Divisioner | 5 (Division 5 → 1); superligaer er post-1.0/prestige-lag |
+| Klubber per division | 8 → 14 kampe (dobbelt round-robin) og årgang på 24 |
+| Klubber i alt | 40 (39 persistente AI-identiteter: navn, farver, kit) |
+| Trup | 14 (2 GK / 5 DF / 4 MF / 3 FW); spilleren kan udvide til 18 |
+| Spillere i live | ~560 + 5 årgange à 24 per sæson (~120 nye/sæson) |
+
+**Én regelmotor for alle klubber**: XP mod potentiale (AI bruger
+divisions-standard udviklingsloft), aldring, pension, auto-fyld af
+trup-huller. Hver division afholder sin egen draft; AI-mod-AI-drafts
+afvikles øjeblikkeligt efter board-logikken.
+
+**Op-/nedrykning**: nr. 1 rykker op, sidstepladsen ned — også for
+AI-klubber, så trupper og rivaler følger med rundt i pyramiden.
+**Undtagelse: spilleren kan aldrig rykke ned** (incremental-kontrakten —
+fremskridt tages ikke fra dig; sidsteplads koster tid, aldrig terræn, og
+belønnes i forvejen med topvalg i draften). Rykker spilleren ikke op, er
+det den næstdårligste AI, der rykker ned i stedet.
+
+### Divisions-skalaen (OVR-bånd med bevidst overlap)
+
+| Division | Typisk OVR | Årgangs-OVR | Økonomi |
+|---|---|---|---|
+| 5 | 30-50 | 25-40 | ×1 |
+| 4 | 45-62 | 38-54 | ×2,5 |
+| 3 | 58-74 | 50-66 | ×6 |
+| 2 | 70-86 | 62-78 | ×16 |
+| 1 | 82-99 | 74-90 | ×40 |
+
+Overlappet betyder, at et division 5-tophold lige akkurat kan overleve i
+division 4's bund: oprykning er væggen, ikke en henrettelse.
+
+**Content-behov**: ~40 klub-identiteter og en dansk-klingende
+navnegenerator (hører til i `/content`).
+
 ## Det lange spil
 
 - **Ligapyramiden er væggene**: Division 5 → … → 1 → kontinentale ligaer →
@@ -570,4 +614,7 @@ evigt; intet skal opfindes.
   Skal findes i playtest
 - Streak-/underdog-bonusser i guld-økonomien
 - Hjemmebanefordel (+5-8% chanceandel — binder til stadion-økonomien)
-- Pyramidens præcise struktur og rating-skalering per division
+- Regret-feed/draft-historik: "M. Lykke, draftet af Northbridge som #22
+  (du havde pick #3) — nu OVR 84" (fuld persistens gør det til et opslag)
+- Transfervinduet sælger syntetiske spillere i 1.0 — post-1.0: køb
+  rigtige spillere fra de andre klubber i den persistente verden
