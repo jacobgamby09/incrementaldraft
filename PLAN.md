@@ -65,8 +65,9 @@ tal står skarpest. Tokens og referencer: `mockups/formation-mockup.html`
 - **Kortet er ceremoni, ikke information** — fuldt kort i draften og som
   detalje-visning (klik på spiller hvor som helst); kompakt kort på bane
   og bænk, hvor læsbarheden vinder
-- **Ingen fotos** — silhuet + trøjenummer + klubfarve-glød (ingen
-  ansigts-asset-pipeline)
+- **Ingen fotos** — trøje/kit-grafik med nummer som kortets centrum
+  (kit-farver + mønstre: striber, skrå bånd, halve — individualitet uden
+  ansigts-asset-pipeline), stråle-burst og klubfarve-glød bagved
 - **Rammen = potentiale-tier**: fyld=bronze, solid=sølv, profil=guld,
   juvel=animeret holo med glans-sweep. Sjældenhedsglæden er dermed koblet
   direkte til scouting-systemet

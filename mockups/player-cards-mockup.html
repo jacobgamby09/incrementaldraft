@@ -3,21 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dynastiet — Playercards (Matchday-retning)</title>
+<title>Dynastiet — Playercards v2 (Matchday-retning)</title>
 <style>
   :root {
     --bg: radial-gradient(1200px 800px at 50% -10%, #12203a 0%, #0b1220 55%, #070b14 100%);
-    --panel: rgba(255,255,255,.045);
     --panel-border: rgba(255,255,255,.09);
     --text: #e8eef7;
     --text-dim: #93a1b8;
     --accent: #a3e635;
     --gold: #fbbf24;
-    --card-bg: linear-gradient(180deg, #1c2942 0%, #121c30 45%, #0d1526 100%);
 
-    --tier-bronze: #b0793f;
-    --tier-solv: #9fb2c8;
-    --tier-guld: #f0c34e;
+    --tier-bronze: #c98a4b;
+    --tier-solv: #b8cde3;
+    --tier-guld: #ffd25e;
+    --tier-fog: #46587a;
+
+    --stat-a: #fb923c;
+    --stat-m: #4ade80;
+    --stat-f: #38bdf8;
   }
   @property --holo { syntax:"<angle>"; initial-value:0deg; inherits:false; }
 
@@ -27,18 +30,23 @@
   h1 { font-size:17px; letter-spacing:.4px; margin-bottom:4px; }
   .sub { color:var(--text-dim); font-size:13px; margin-bottom:30px; }
   h2 { font-size:11px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase;
-    color:var(--text-dim); margin:38px 0 16px; }
+    color:var(--text-dim); margin:40px 0 18px; }
 
   .cardrow { display:flex; gap:26px; flex-wrap:wrap; align-items:flex-start; }
-  .cardcol { width:236px; }
-  .caption { text-align:center; margin-top:12px; font-size:12px; color:var(--text-dim); line-height:1.5; }
+  .cardcol { width:238px; }
+  .caption { text-align:center; margin-top:14px; font-size:12px; color:var(--text-dim); line-height:1.5; }
   .caption b { color:var(--text); }
 
-  /* ============ FULDT PLAYERCARD ============ */
+  /* ============ PLAYERCARD v2 ============ */
   .pcard {
-    position:relative; width:236px; height:340px; border-radius:16px;
-    background:var(--card-bg); padding:14px 16px 12px;
-    border:3px solid var(--tier); box-shadow:0 10px 30px rgba(0,0,0,.5);
+    position:relative; width:238px; height:354px; border-radius:18px;
+    padding:14px 16px 12px;
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,.028) 0 2px, transparent 2px 9px),
+      radial-gradient(220px 200px at 50% 34%, color-mix(in srgb, var(--tier) 20%, transparent) 0%, transparent 70%),
+      linear-gradient(180deg, color-mix(in srgb, var(--tier) 14%, #182740) 0%, #121c30 52%, #0c1424 100%);
+    border:3px solid var(--tier);
+    box-shadow: 0 0 26px color-mix(in srgb, var(--tier) 28%, transparent), 0 12px 32px rgba(0,0,0,.55);
     overflow:hidden; display:flex; flex-direction:column;
     transition:transform .18s;
   }
@@ -46,71 +54,88 @@
   .pcard.bronze { --tier: var(--tier-bronze); }
   .pcard.solv   { --tier: var(--tier-solv); }
   .pcard.guld   { --tier: var(--tier-guld); }
+  .pcard.fogc   { --tier: var(--tier-fog); border-style:dashed; }
 
   .pcard.juvel {
+    --tier: #7de3a8;
     border:3px solid transparent;
     background:
-      var(--card-bg) padding-box,
-      conic-gradient(from var(--holo), #f0c34e, #a3e635, #38bdf8, #e879f9, #f0c34e) border-box;
+      repeating-linear-gradient(135deg, rgba(255,255,255,.03) 0 2px, transparent 2px 9px) padding-box,
+      radial-gradient(220px 200px at 50% 34%, rgba(163,230,53,.18) 0%, transparent 70%) padding-box,
+      linear-gradient(180deg, #1b3040 0%, #121c30 52%, #0c1424 100%) padding-box,
+      conic-gradient(from var(--holo), #ffd25e, #a3e635, #38bdf8, #e879f9, #ffd25e) border-box;
     animation: holo 4s linear infinite;
+    box-shadow: 0 0 34px rgba(163,230,53,.35), 0 12px 32px rgba(0,0,0,.55);
   }
   @keyframes holo { to { --holo:360deg; } }
-  .pcard.juvel::after {
-    content:""; position:absolute; inset:0; pointer-events:none;
-    background:linear-gradient(115deg, transparent 30%, rgba(255,255,255,.16) 46%, transparent 60%);
-    background-size:260% 100%; animation:glare 3.2s ease-in-out infinite;
+
+  .pcard.guld::after, .pcard.juvel::after {
+    content:""; position:absolute; inset:0; pointer-events:none; border-radius:15px;
+    background:linear-gradient(115deg, transparent 32%, rgba(255,255,255,.17) 47%, transparent 60%);
+    background-size:260% 100%; animation:glare 3.4s ease-in-out infinite;
   }
-  @keyframes glare { 0%,20% { background-position:130% 0; } 65%,100% { background-position:-60% 0; } }
+  .pcard.guld::after { animation-duration:5.5s; opacity:.6; }
+  @keyframes glare { 0%,18% { background-position:135% 0; } 62%,100% { background-position:-60% 0; } }
 
-  .tierlabel { position:absolute; top:12px; right:-31px; transform:rotate(45deg);
-    font-size:9px; font-weight:800; letter-spacing:1.5px; padding:3px 34px;
-    background:var(--tier, var(--panel-border)); color:#0b1220; }
-  .juvel .tierlabel { background:linear-gradient(90deg,#f0c34e,#a3e635,#38bdf8); }
+  .spark { position:absolute; width:5px; height:5px; border-radius:50%; background:#fff;
+    box-shadow:0 0 8px 2px rgba(163,230,53,.8); animation:twinkle 2.4s ease-in-out infinite; pointer-events:none; }
+  @keyframes twinkle { 0%,100% { opacity:0; transform:scale(.4);} 50% { opacity:1; transform:scale(1);} }
 
-  .ptop { display:flex; align-items:flex-start; justify-content:space-between; }
-  .povr { font-size:40px; font-weight:800; line-height:.95; }
-  .povr small { display:block; font-size:9px; font-weight:800; letter-spacing:1.6px; color:var(--text-dim); }
-  .ppos { font-size:11px; font-weight:800; background:#fb923c; color:#0b1220;
-    padding:3px 9px; border-radius:7px; margin-top:5px; display:inline-block; }
-  .ppot { text-align:right; font-size:19px; font-weight:800; color:var(--tier, var(--text-dim)); }
-  .juvel .ppot { background:linear-gradient(90deg,#f0c34e,#a3e635); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .tierlabel { position:absolute; top:14px; right:-32px; transform:rotate(45deg);
+    font-size:9px; font-weight:800; letter-spacing:1.5px; padding:4px 36px;
+    background:var(--tier); color:#0b1220; z-index:3; }
+  .juvel .tierlabel { background:linear-gradient(90deg,#ffd25e,#a3e635,#38bdf8); }
+
+  .ptop { display:flex; align-items:flex-start; justify-content:space-between; position:relative; z-index:2; }
+  .povr { font-size:42px; font-weight:800; line-height:.95;
+    text-shadow:0 0 18px color-mix(in srgb, var(--tier) 55%, transparent); }
+  .povr.small { font-size:26px; padding-top:8px; }
+  .povr small { display:block; font-size:9px; font-weight:800; letter-spacing:1.6px; color:var(--text-dim); text-shadow:none; }
+  .ppos { font-size:11px; font-weight:800; color:#0b1220; padding:3px 9px; border-radius:7px;
+    margin-top:6px; display:inline-block; }
+  .ppot { text-align:right; font-size:21px; font-weight:800; color:var(--tier); }
+  .juvel .ppot { background:linear-gradient(90deg,#ffd25e,#a3e635); -webkit-background-clip:text; background-clip:text; color:transparent; }
   .ppot small { display:block; font-size:9px; font-weight:800; letter-spacing:1.6px; color:var(--text-dim); }
 
-  .pfigure { position:relative; height:128px; margin:8px -6px 4px; display:flex;
+  .pfigure { position:relative; height:132px; margin:6px -8px 4px; display:flex;
     align-items:flex-end; justify-content:center; }
-  .pglow { position:absolute; inset:auto 0 -12px 0; height:110px;
-    background:radial-gradient(90px 70px at 50% 100%, var(--kit, #3b82f6) 0%, transparent 70%);
-    opacity:.4; }
-  .silhouette { position:relative; width:104px; height:118px; fill:#26344e; }
-  .juvel .silhouette { fill:#2d3d5c; }
-  .pnumber { position:absolute; bottom:26px; left:50%; transform:translateX(-50%);
-    font-size:26px; font-weight:800; color:rgba(232,238,247,.85); letter-spacing:1px; }
+  .burst { position:absolute; inset:-10px 0 -6px 0; pointer-events:none;
+    background:repeating-conic-gradient(from -9deg at 50% 82%,
+      color-mix(in srgb, var(--kit1) 22%, transparent) 0deg 7deg, transparent 7deg 24deg);
+    -webkit-mask-image:radial-gradient(150px 130px at 50% 80%, #000 30%, transparent 72%);
+    mask-image:radial-gradient(150px 130px at 50% 80%, #000 30%, transparent 72%); }
+  .pglow { position:absolute; inset:auto 0 -14px 0; height:110px; pointer-events:none;
+    background:radial-gradient(100px 74px at 50% 100%, var(--kit1) 0%, transparent 72%); opacity:.5; }
+  .jerseywrap { position:relative; width:126px; height:120px; filter:drop-shadow(0 6px 10px rgba(0,0,0,.45)); }
+  .fogfig { filter:saturate(.25) brightness(.6); }
+  .fogmark { position:absolute; top:38%; left:50%; transform:translate(-50%,-50%);
+    font-size:46px; font-weight:800; color:rgba(200,214,235,.65); z-index:2;
+    text-shadow:0 0 14px rgba(70,88,122,.9); }
 
-  .pname { text-align:center; font-size:17px; font-weight:800; letter-spacing:.6px;
+  .pname { text-align:center; font-size:17px; font-weight:800; letter-spacing:.8px; position:relative; z-index:2;
     border-top:1px solid var(--panel-border); border-bottom:1px solid var(--panel-border);
     padding:7px 0 6px; }
-  .pstats { display:flex; justify-content:center; gap:18px; padding:9px 0 4px;
-    font-size:14px; color:var(--text-dim); }
-  .pstats b { color:var(--text); font-size:16px; }
-  .ptrait { text-align:center; font-size:12px; font-weight:700; color:var(--accent);
-    padding:3px 0 5px; }
-  .pfoot { margin-top:auto; display:flex; justify-content:space-between;
+  .pstats { display:flex; justify-content:center; gap:8px; padding:9px 0 5px; position:relative; z-index:2; }
+  .schip { font-size:11px; font-weight:700; padding:4px 10px; border-radius:8px; }
+  .schip b { font-size:14px; color:#fff; margin-left:3px; }
+  .schip.a { background:color-mix(in srgb, var(--stat-a) 20%, transparent); color:var(--stat-a); }
+  .schip.m { background:color-mix(in srgb, var(--stat-m) 20%, transparent); color:var(--stat-m); }
+  .schip.f { background:color-mix(in srgb, var(--stat-f) 20%, transparent); color:var(--stat-f); }
+  .ptrait { text-align:center; font-size:12px; font-weight:800; padding:2px 0 4px; position:relative; z-index:2; }
+  .ptrait span { background:color-mix(in srgb, var(--accent) 16%, transparent); color:var(--accent);
+    padding:3px 12px; border-radius:99px; }
+  .ptrait.none span { background:transparent; color:var(--text-dim); font-weight:600; }
+  .scoutbtn { margin:3px auto 2px; display:block; background:var(--accent); color:#0b1220; position:relative; z-index:2;
+    border:none; font-weight:800; font-size:11px; padding:8px 18px; border-radius:9px; cursor:pointer;
+    box-shadow:0 0 16px rgba(163,230,53,.45); }
+  .pfoot { margin-top:auto; display:flex; justify-content:space-between; position:relative; z-index:2;
     font-size:10.5px; color:var(--text-dim); border-top:1px solid var(--panel-border); padding-top:8px; }
-
-  /* ---- uscoutet tilstand ---- */
-  .pcard.fog { --tier:#3a4964; border-style:dashed; }
-  .fog .silhouette { fill:#1a2438; }
-  .fog .pnumber { color:rgba(147,161,184,.4); }
-  .fogmark { position:absolute; bottom:34px; left:50%; transform:translateX(-50%);
-    font-size:44px; font-weight:800; color:rgba(147,161,184,.5); }
-  .fog .pstats, .fog .povr { color:var(--text-dim); }
-  .scoutbtn { margin:2px auto 0; display:block; background:var(--accent); color:#0b1220;
-    border:none; font-weight:800; font-size:11px; padding:7px 16px; border-radius:8px; cursor:pointer; }
 
   /* ---- kompakt kontrast ---- */
   .compactdemo { display:flex; gap:30px; align-items:center; flex-wrap:wrap; }
   .minicard { width:118px; background:linear-gradient(180deg, rgba(30,41,59,.92), rgba(15,23,42,.94));
-    border:2px solid rgba(255,255,255,.14); border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,.45);
+    border:2px solid var(--tier-guld); border-radius:12px;
+    box-shadow:0 0 12px rgba(255,210,94,.25), 0 6px 18px rgba(0,0,0,.45);
     padding:7px 9px 6px; position:relative; }
   .minicard .traiticon { position:absolute; top:-9px; right:-9px; width:22px; height:22px; border-radius:50%;
     background:var(--accent); color:#0b1220; font-size:12px; display:flex; align-items:center;
@@ -129,132 +154,15 @@
 </head>
 <body>
 
-<h1>Playercards — Matchday-retning (A)</h1>
-<div class="sub">Kortet er draftens objekt: rammen = potentiale-tier, tågen = scouting-status. Ingen fotos — silhuet, nummer og klubfarve-glød.</div>
+<h1>Playercards v2 — Matchday-retning (A)</h1>
+<div class="sub">Trøjen er kortets centrum: kit-farver + mønster giver individualitet uden ansigter. Rammen = potentiale-tier, tågen = scouting-status.</div>
 
-<h2>Draft-boardets fire tilstande + juvelen</h2>
-<div class="cardrow">
-
-  <div class="cardcol">
-    <div class="pcard fog">
-      <div class="tierlabel">USCOUTET</div>
-      <div class="ptop">
-        <div class="povr">55–68<small>OVR</small><span class="ppos" style="background:#4ade80">CM</span></div>
-        <div class="ppot">?–?<small>POT</small></div>
-      </div>
-      <div class="pfigure">
-        <div class="pglow" style="--kit:#3a4964"></div>
-        <svg class="silhouette" viewBox="0 0 104 118"><circle cx="52" cy="30" r="20"/><path d="M12 118 C12 76 30 60 52 60 C74 60 92 76 92 118 Z"/></svg>
-        <div class="fogmark">?</div>
-      </div>
-      <div class="pname">J. NØRGAARD</div>
-      <div class="pstats"><span>A <b>?</b></span><span>M <b>?</b></span><span>F <b>?</b></span></div>
-      <div class="ptrait" style="color:var(--text-dim)">Trait skjult</div>
-      <button class="scoutbtn">SCOUT · 1 RAPPORT</button>
-      <div class="pfoot"><span>17 år</span><span>#11 på boardet</span></div>
-    </div>
-    <div class="caption"><b>Uscoutet</b> — mediernes board ser kun intervaller.<br>Én rapport, og kortet transformerer.</div>
-  </div>
-
-  <div class="cardcol">
-    <div class="pcard bronze">
-      <div class="tierlabel">BRONZE</div>
-      <div class="ptop">
-        <div class="povr">34<small>OVR</small><span class="ppos" style="background:#38bdf8">RB</span></div>
-        <div class="ppot" >48<small>POT</small></div>
-      </div>
-      <div class="pfigure">
-        <div class="pglow" style="--kit:#b0793f"></div>
-        <svg class="silhouette" viewBox="0 0 104 118"><circle cx="52" cy="30" r="20"/><path d="M12 118 C12 76 30 60 52 60 C74 60 92 76 92 118 Z"/></svg>
-        <div class="pnumber">2</div>
-      </div>
-      <div class="pname">C. BECK</div>
-      <div class="pstats"><span>A <b>14</b></span><span>M <b>22</b></span><span>F <b>36</b></span></div>
-      <div class="ptrait" style="color:var(--text-dim)">Ingen trait</div>
-      <div class="pfoot"><span>18 år</span><span>#19 på boardet</span></div>
-    </div>
-    <div class="caption"><b>Fyld</b> (Pot 40-55) — bronzerammen lover ikke for meget.</div>
-  </div>
-
-  <div class="cardcol">
-    <div class="pcard solv">
-      <div class="tierlabel">SØLV</div>
-      <div class="ptop">
-        <div class="povr">38<small>OVR</small><span class="ppos" style="background:#4ade80">LM</span></div>
-        <div class="ppot">64<small>POT</small></div>
-      </div>
-      <div class="pfigure">
-        <div class="pglow" style="--kit:#9fb2c8"></div>
-        <svg class="silhouette" viewBox="0 0 104 118"><circle cx="52" cy="30" r="20"/><path d="M12 118 C12 76 30 60 52 60 C74 60 92 76 92 118 Z"/></svg>
-        <div class="pnumber">11</div>
-      </div>
-      <div class="pname">A. THOMSEN</div>
-      <div class="pstats"><span>A <b>31</b></span><span>M <b>34</b></span><span>F <b>18</b></span></div>
-      <div class="ptrait">✨ Playmaker</div>
-      <div class="pfoot"><span>17 år</span><span>#7 på boardet</span></div>
-    </div>
-    <div class="caption"><b>Solid</b> (Pot 55-70) — hæderlig starter om 3-4 sæsoner.</div>
-  </div>
-
-  <div class="cardcol">
-    <div class="pcard guld">
-      <div class="tierlabel">GULD</div>
-      <div class="ptop">
-        <div class="povr">41<small>OVR</small><span class="ppos" style="background:#818cf8">GK</span></div>
-        <div class="ppot">79<small>POT</small></div>
-      </div>
-      <div class="pfigure">
-        <div class="pglow" style="--kit:#f0c34e"></div>
-        <svg class="silhouette" viewBox="0 0 104 118"><circle cx="52" cy="30" r="20"/><path d="M12 118 C12 76 30 60 52 60 C74 60 92 76 92 118 Z"/></svg>
-        <div class="pnumber">1</div>
-      </div>
-      <div class="pname">S. HØJER</div>
-      <div class="pstats"><span>A <b>3</b></span><span>M <b>9</b></span><span>F <b>44</b></span></div>
-      <div class="ptrait">Ⓒ Anfører</div>
-      <div class="pfoot"><span>19 år</span><span>#3 på boardet</span></div>
-    </div>
-    <div class="caption"><b>Profil</b> (Pot 70-85) — guldrammen gør AI-klubberne sultne.</div>
-  </div>
-
-  <div class="cardcol">
-    <div class="pcard juvel">
-      <div class="tierlabel">JUVEL</div>
-      <div class="ptop">
-        <div class="povr">27<small>OVR</small><span class="ppos" style="background:#fb923c">ST</span></div>
-        <div class="ppot">88<small>POT</small></div>
-      </div>
-      <div class="pfigure">
-        <div class="pglow" style="--kit:#a3e635"></div>
-        <svg class="silhouette" viewBox="0 0 104 118"><circle cx="52" cy="30" r="20"/><path d="M12 118 C12 76 30 60 52 60 C74 60 92 76 92 118 Z"/></svg>
-        <div class="pnumber">9</div>
-      </div>
-      <div class="pname">M. LYKKE</div>
-      <div class="pstats"><span>A <b>33</b></span><span>M <b>12</b></span><span>F <b>6</b></span></div>
-      <div class="ptrait">⚽ Målscorer</div>
-      <div class="pfoot"><span>16 år</span><span>#22 på boardet (!)</span></div>
-    </div>
-    <div class="caption"><b>Juvelen</b> (Pot 85+) — holo-ramme og glans-sweep.<br>Mediet har ham som #22. Du ved bedre.</div>
-  </div>
-</div>
+<h2>Draft-boardets tilstande + juvelen</h2>
+<div class="cardrow" id="board"></div>
 
 <h2>Samme spiller, to kontekster</h2>
 <div class="compactdemo">
-  <div class="pcard guld" style="transform:scale(.92); transform-origin:left center;">
-    <div class="tierlabel">GULD</div>
-    <div class="ptop">
-      <div class="povr">64<small>OVR</small><span class="ppos" style="background:#fb923c">ST</span></div>
-      <div class="ppot">87<small>POT</small></div>
-    </div>
-    <div class="pfigure">
-      <div class="pglow" style="--kit:#a3e635"></div>
-      <svg class="silhouette" viewBox="0 0 104 118"><circle cx="52" cy="30" r="20"/><path d="M12 118 C12 76 30 60 52 60 C74 60 92 76 92 118 Z"/></svg>
-      <div class="pnumber">9</div>
-    </div>
-    <div class="pname">V. HOLM</div>
-    <div class="pstats"><span>A <b>71</b></span><span>M <b>34</b></span><span>F <b>16</b></span></div>
-    <div class="ptrait">⚽ Målscorer</div>
-    <div class="pfoot"><span>19 år · S3-årgang</span><span>XP +210 sidste sæson</span></div>
-  </div>
+  <div id="compare"></div>
   <div class="arrow">⟷</div>
   <div>
     <div class="minicard">
@@ -267,12 +175,116 @@
   </div>
   <div class="compactnote">
     <b>Fuldt kort</b> i draften og som detalje-visning (klik på en spiller
-    hvor som helst). <b>Kompakt kort</b> på banen og bænken — læsbarheden
-    vinder, når der står 14 mand på skærmen. Rammens tier-farve går igen som
-    en tynd kant på det kompakte kort, så juvelen også kan ses på banen.
+    hvor som helst). <b>Kompakt kort</b> på banen og bænken. Tier-farven går
+    igen som kant og glød på det kompakte kort — juvelen kan spottes på banen.
   </div>
 </div>
 
+<script>
+const SHIRT = "M46 10 C52 20 68 20 74 10 L94 18 L112 38 L100 56 L88 47 L88 106 L32 106 L32 47 L20 56 L8 38 L26 18 Z";
+
+function jersey(id, kit1, kit2, pattern, number, fogged) {
+  let pat = "";
+  if (pattern === "striber") {
+    for (const x of [24, 42, 60, 78, 96]) pat += `<rect x="${x}" y="0" width="9" height="112" fill="${kit2}"/>`;
+  } else if (pattern === "band") {
+    pat = `<rect x="-30" y="44" width="190" height="22" fill="${kit2}" transform="rotate(-24 60 55)"/>`;
+  } else if (pattern === "halve") {
+    pat = `<rect x="60" y="0" width="60" height="112" fill="${kit2}"/>`;
+  }
+  return `
+  <svg viewBox="0 0 120 112" style="width:100%;height:100%">
+    <defs>
+      <clipPath id="shirt-${id}"><path d="${SHIRT}"/></clipPath>
+      <linearGradient id="shade-${id}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="rgba(255,255,255,.14)"/>
+        <stop offset="1" stop-color="rgba(0,0,0,.30)"/>
+      </linearGradient>
+    </defs>
+    <path d="${SHIRT}" fill="${kit1}"/>
+    <g clip-path="url(#shirt-${id})">
+      ${pat}
+      <rect x="0" y="0" width="120" height="112" fill="url(#shade-${id})"/>
+    </g>
+    <path d="${SHIRT}" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M46 10 C52 20 68 20 74 10" fill="none" stroke="${kit2}" stroke-width="4"/>
+    <text x="60" y="82" text-anchor="middle" font-size="34" font-weight="800"
+      fill="#fff" opacity="${fogged ? .25 : .95}"
+      style="paint-order:stroke" stroke="rgba(0,0,0,.4)" stroke-width="2">${number}</text>
+  </svg>`;
+}
+
+function render(c, i) {
+  const stats = c.fog
+    ? `<span class="schip a">A<b>?</b></span><span class="schip m">M<b>?</b></span><span class="schip f">F<b>?</b></span>`
+    : `<span class="schip a">A<b>${c.a}</b></span><span class="schip m">M<b>${c.m}</b></span><span class="schip f">F<b>${c.f}</b></span>`;
+  const trait = c.trait
+    ? `<div class="ptrait"><span>${c.trait}</span></div>`
+    : `<div class="ptrait none"><span>${c.fog ? "Trait skjult" : "Ingen trait"}</span></div>`;
+  const sparks = c.tier === "juvel"
+    ? `<i class="spark" style="top:18%;left:12%"></i>
+       <i class="spark" style="top:32%;right:10%;animation-delay:.8s"></i>
+       <i class="spark" style="bottom:24%;left:18%;animation-delay:1.5s"></i>`
+    : "";
+  return `
+  <div class="pcard ${c.tier === "fog" ? "fogc" : c.tier}">
+    ${sparks}
+    <div class="tierlabel">${c.label}</div>
+    <div class="ptop">
+      <div class="povr ${c.fog ? "small" : ""}">${c.ovr}<small>OVR</small>
+        <span class="ppos" style="background:${c.posColor}">${c.pos}</span></div>
+      <div class="ppot">${c.pot}<small>POT</small></div>
+    </div>
+    <div class="pfigure ${c.fog ? "fogfig" : ""}" style="--kit1:${c.kit1}">
+      <div class="burst"></div>
+      <div class="pglow"></div>
+      <div class="jerseywrap">${jersey(i, c.kit1, c.kit2, c.pattern, c.number, c.fog)}</div>
+      ${c.fog ? `<div class="fogmark">?</div>` : ""}
+    </div>
+    <div class="pname">${c.name}</div>
+    <div class="pstats">${stats}</div>
+    ${trait}
+    ${c.fog ? `<button class="scoutbtn">SCOUT · 1 RAPPORT</button>` : ""}
+    <div class="pfoot"><span>${c.footL}</span><span>${c.footR}</span></div>
+  </div>`;
+}
+
+const board = [
+  { tier:"fog", label:"USCOUTET", ovr:"55–68", pot:"?–?", pos:"CM", posColor:"#4ade80",
+    name:"J. NØRGAARD", fog:true, kit1:"#46587a", kit2:"#2c3a55", pattern:"striber", number:8,
+    footL:"17 år", footR:"#11 på boardet",
+    cap:"<b>Uscoutet</b> — mediernes board ser kun intervaller.<br>Én rapport, og kortet transformerer." },
+  { tier:"bronze", label:"BRONZE", ovr:34, pot:48, pos:"RB", posColor:"#38bdf8",
+    name:"C. BECK", a:14, m:22, f:36, kit1:"#b3543a", kit2:"#7e3a28", pattern:"halve", number:2,
+    footL:"18 år", footR:"#19 på boardet",
+    cap:"<b>Fyld</b> (Pot 40-55) — bronzerammen lover ikke for meget." },
+  { tier:"solv", label:"SØLV", ovr:38, pot:64, pos:"LM", posColor:"#4ade80",
+    name:"A. THOMSEN", a:31, m:34, f:18, trait:"✨ Playmaker",
+    kit1:"#3f78c2", kit2:"#e8eef7", pattern:"striber", number:11,
+    footL:"17 år", footR:"#7 på boardet",
+    cap:"<b>Solid</b> (Pot 55-70) — hæderlig starter om 3-4 sæsoner." },
+  { tier:"guld", label:"GULD", ovr:41, pot:79, pos:"GK", posColor:"#818cf8",
+    name:"S. HØJER", a:3, m:9, f:44, trait:"Ⓒ Anfører",
+    kit1:"#8a48d8", kit2:"#ffd25e", pattern:"band", number:1,
+    footL:"19 år", footR:"#3 på boardet",
+    cap:"<b>Profil</b> (Pot 70-85) — guldrammen har sit eget shine-sweep." },
+  { tier:"juvel", label:"JUVEL", ovr:27, pot:88, pos:"ST", posColor:"#fb923c",
+    name:"M. LYKKE", a:33, m:12, f:6, trait:"⚽ Målscorer",
+    kit1:"#18a86b", kit2:"#0e2a20", pattern:"band", number:9,
+    footL:"16 år", footR:"#22 på boardet (!)",
+    cap:"<b>Juvelen</b> (Pot 85+) — holo-ramme, gnister og glans.<br>Mediet har ham som #22. Du ved bedre." },
+];
+
+document.getElementById("board").innerHTML = board
+  .map((c, i) => `<div class="cardcol">${render(c, i)}<div class="caption">${c.cap}</div></div>`)
+  .join("");
+
+document.getElementById("compare").innerHTML = render({
+  tier:"guld", label:"GULD", ovr:64, pot:87, pos:"ST", posColor:"#fb923c",
+  name:"V. HOLM", a:71, m:34, f:16, trait:"⚽ Målscorer",
+  kit1:"#2563eb", kit2:"#e8eef7", pattern:"striber", number:9,
+  footL:"19 år · S3-årgang", footR:"XP +210 sidste sæson",
+}, "cmp");
+</script>
 </body>
-<script></script>
 </html>
