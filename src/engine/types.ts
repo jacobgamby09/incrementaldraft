@@ -75,6 +75,8 @@ export interface Club {
   gold: number;
   /** Træningsanlæggets tier (1-7) — bestemmer udviklingsloftet. AI bruger divisions-standard. */
   facilityTier: number;
+  /** Spillerens gemte opstilling: slotId -> playerId (kun spillerklubben) */
+  lineup?: Record<string, string>;
 }
 
 export interface TableRow {

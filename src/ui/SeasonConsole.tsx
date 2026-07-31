@@ -1,7 +1,8 @@
 import { DIVISIONS } from "../engine/divisions";
 import { playerOvr } from "../engine/lineup";
-import type { DraftProspect, Player, TableRow } from "../engine/types";
+import type { DraftProspect, TableRow } from "../engine/types";
 import { playerClub, playerDivisionIndex } from "../engine/world";
+import { FormationScreen } from "./FormationScreen";
 import { useGame } from "./store";
 
 const S: Record<string, React.CSSProperties> = {
@@ -34,33 +35,6 @@ const TRAIT_LABEL: Record<string, string> = {
 
 function fmt(n: number): string {
   return Math.round(n).toLocaleString("da-DK");
-}
-
-function SquadTable({ squad }: { squad: Player[] }) {
-  const sorted = [...squad].sort((a, b) => playerOvr(b) - playerOvr(a));
-  return (
-    <table style={S.table}>
-      <thead>
-        <tr>
-          {["Navn", "Pos", "Alder", "OVR", "Pot", "Trait"].map((h) => (
-            <th key={h} style={{ ...S.cellL, color: "#93a1b8" }}>{h}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {sorted.map((p) => (
-          <tr key={p.id}>
-            <td style={S.cellL}>{p.name}</td>
-            <td style={S.cellL}>{p.pos}</td>
-            <td style={S.cell}>{p.age}</td>
-            <td style={{ ...S.cell, fontWeight: 800 }}>{playerOvr(p)}</td>
-            <td style={{ ...S.cell, color: "#93a1b8" }}>{Math.round(p.potential)}</td>
-            <td style={S.cellL}>{p.trait ? TRAIT_LABEL[p.trait] : ""}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
 }
 
 function LeagueTable({ rows, playerClubId }: { rows: TableRow[]; playerClubId: string }) {
@@ -248,7 +222,6 @@ export function SeasonConsole() {
   const world = useGame((s) => s.world);
   const phase = useGame((s) => s.phase);
   const finalize = useGame((s) => s.finalize);
-  const playSeason = useGame((s) => s.playSeason);
   const newWorld = useGame((s) => s.newWorld);
 
   const me = playerClub(world);
@@ -279,21 +252,13 @@ export function SeasonConsole() {
               </div>
             </div>
           )}
-          <div style={S.row}>
-            <div style={S.panel}>
-              <div style={S.title}>Truppen</div>
-              <SquadTable squad={me.squad} />
+          <FormationScreen />
+          {table && (
+            <div style={{ ...S.panel, marginTop: 20, display: "inline-block" }}>
+              <div style={S.title}>Sidste sæsons tabel</div>
+              <LeagueTable rows={table} playerClubId={world.playerClubId} />
             </div>
-            <div>
-              {table && (
-                <div style={S.panel}>
-                  <div style={S.title}>Sidste sæsons tabel</div>
-                  <LeagueTable rows={table} playerClubId={world.playerClubId} />
-                </div>
-              )}
-              <button style={S.btn} onClick={playSeason}>Spil sæson {world.season} ▶</button>
-            </div>
-          </div>
+          )}
         </div>
       )}
 

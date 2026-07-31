@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { advanceAiPicks, playerPick } from "../engine/draft";
+import { autoAssign } from "../engine/formation";
 import { finalizeSeason, runSeason, startDrafts } from "../engine/season";
 import type { DraftState, FinalizeReport, SeasonReport, World } from "../engine/types";
 import { createWorld, playerClub, playerDivisionIndex } from "../engine/world";
@@ -19,6 +20,9 @@ interface GameState {
   goToDraft(): void;
   pick(prospectId: string): void;
   finishSeason(): void;
+  /** Placér spiller i slot (swap-logik: fra bænk fortrænges beboeren, fra bane byttes) */
+  placePlayer(slotId: string, playerId: string): void;
+  autoFillLineup(): void;
 }
 
 export const useGame = create<GameState>((set, get) => ({
@@ -59,5 +63,27 @@ export const useGame = create<GameState>((set, get) => ({
     const { world, version } = get();
     const finalize = finalizeSeason(world);
     set({ finalize, phase: "ready", draft: null, version: version + 1 });
+  },
+
+  placePlayer: (slotId, playerId) => {
+    const { world, version } = get();
+    const me = playerClub(world);
+    const lineup = { ...(me.lineup ?? {}) };
+    const fromSlot = Object.entries(lineup).find(([, pid]) => pid === playerId)?.[0];
+    const occupant = lineup[slotId];
+    lineup[slotId] = playerId;
+    if (fromSlot && fromSlot !== slotId) {
+      if (occupant) lineup[fromSlot] = occupant;
+      else delete lineup[fromSlot];
+    }
+    me.lineup = lineup;
+    set({ version: version + 1 });
+  },
+
+  autoFillLineup: () => {
+    const { world, version } = get();
+    const me = playerClub(world);
+    me.lineup = autoAssign(me.squad);
+    set({ version: version + 1 });
   },
 }));

@@ -5,6 +5,7 @@ import { advanceAiPicks, CLASS_SIZE, draftOrder, generateClass, rollQuality } fr
 import { ageAndDecline, develop, FACILITY_CEILING, seasonXp, shouldRetire } from "./development";
 import { CLUBS_PER_DIVISION, DIVISIONS, SQUAD_CAP } from "./divisions";
 import { ECON, salePrice } from "./economy";
+import { evaluate, resolveAssignment, scorersFromAssignment } from "./formation";
 import { pickXI, playerOvr, scorerCandidates, teamLines } from "./lineup";
 import { simulateMatch } from "./match";
 import { makePlayer } from "./player-gen";
@@ -76,11 +77,23 @@ export function runSeason(world: World): SeasonReport {
     const clubs = world.divisions[d];
     const rows = new Map(clubs.map((c) => [c.id, emptyRow(c)]));
     const lineups = clubs.map((club) => {
+      if (club.isPlayer) {
+        // Spillerklubben: gemt opstilling + synergier (formations-motoren)
+        const assignment = resolveAssignment(club);
+        const evaluation = evaluate(assignment);
+        return {
+          club,
+          xi: [...assignment.values()],
+          xpMult: evaluation.xpMult,
+          team: { lines: evaluation.lines, scorers: scorersFromAssignment(assignment) },
+        };
+      }
       const xi = pickXI(club.squad);
       return {
         club,
         xi,
-        team: { lines: teamLines(xi), scorers: club.isPlayer ? scorerCandidates(xi) : undefined },
+        xpMult: {} as Record<string, number>,
+        team: { lines: teamLines(xi), scorers: undefined as ReturnType<typeof scorerCandidates> | undefined },
       };
     });
 
@@ -155,12 +168,20 @@ export function runSeason(world: World): SeasonReport {
   const harvest: DevelopmentOutcome[] = [];
   for (let d = 0; d < world.divisions.length; d++) {
     for (const club of world.divisions[d]) {
-      const xiIds = new Set(pickXI(club.squad).map((p) => p.id));
+      let xiIds: Set<string>;
+      let xpMult: Record<string, number> = {};
+      if (club.isPlayer) {
+        const assignment = resolveAssignment(club);
+        xiIds = new Set([...assignment.values()].map((p) => p.id));
+        xpMult = evaluate(assignment).xpMult; // Mentor: +50% XP til unge naboer
+      } else {
+        xiIds = new Set(pickXI(club.squad).map((p) => p.id));
+      }
       const ceiling = club.isPlayer
         ? FACILITY_CEILING[club.facilityTier - 1]
         : DIVISIONS[d].aiCeiling;
       for (const p of club.squad) {
-        const xp = seasonXp(xiIds.has(p.id), p.age, club.facilityTier);
+        const xp = seasonXp(xiIds.has(p.id), p.age, club.facilityTier) * (xpMult[p.id] ?? 1);
         const outcome = develop(p, xp, ceiling);
         if (club.isPlayer) harvest.push(outcome);
       }
