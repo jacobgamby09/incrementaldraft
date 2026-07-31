@@ -3,6 +3,7 @@ import { playerOvr } from "../engine/lineup";
 import type { DraftProspect, TableRow } from "../engine/types";
 import { playerClub, playerDivisionIndex } from "../engine/world";
 import { FormationScreen } from "./FormationScreen";
+import { SeasonFeed } from "./SeasonFeed";
 import { useGame } from "./store";
 
 const S: Record<string, React.CSSProperties> = {
@@ -262,6 +263,7 @@ export function SeasonConsole() {
         </div>
       )}
 
+      {phase === "feed" && <SeasonFeed />}
       {phase === "harvest" && <HarvestView />}
       {(phase === "draft" || phase === "draft-done") && <DraftBoard />}
     </div>

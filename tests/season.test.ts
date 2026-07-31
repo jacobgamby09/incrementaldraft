@@ -5,7 +5,7 @@ import { advanceAiPicks, generateClass, playerPick, CLASS_SIZE } from "../src/en
 import { DIVISIONS } from "../src/engine/divisions";
 import { pickXI, playerOvr } from "../src/engine/lineup";
 import { createRng } from "../src/engine/rng";
-import { finalizeSeason, makeFixtures, runSeason, startDrafts } from "../src/engine/season";
+import { finalizeSeason, makeFixtures, runSeason, standingsAfter, startDrafts } from "../src/engine/season";
 import type { DraftState, World } from "../src/engine/types";
 import { createWorld, playerClub, playerDivisionIndex } from "../src/engine/world";
 
@@ -119,6 +119,49 @@ describe("sæson-afvikling", () => {
     const average = total / 5;
     expect(average).toBeGreaterThan(350);
     expect(average).toBeLessThan(1500);
+  });
+});
+
+describe("sæson-feedet", () => {
+  it("14 runder à 4 kampe; spillerens kamp har navngivne events, der matcher scoren", () => {
+    const world = createWorld(61);
+    const report = runSeason(world);
+    expect(report.rounds.length).toBe(14);
+    for (const round of report.rounds) {
+      expect(round.length).toBe(4);
+      const playerMatches = round.filter((m) => m.isPlayerMatch);
+      expect(playerMatches.length).toBe(1);
+      const m = playerMatches[0];
+      expect(m.events).toBeDefined();
+      const goals = m.events!.filter((e) => e.type === "goal");
+      expect(goals.length).toBe(m.score[0] + m.score[1]);
+      for (const g of goals) expect(g.scorerName).toBeTruthy();
+    }
+  });
+
+  it("standingsAfter(14) matcher sluttabellen", () => {
+    const world = createWorld(67);
+    const report = runSeason(world);
+    const standings = standingsAfter(report.rounds, 14);
+    const finalTable = report.tables[report.playerDivisionIndex];
+    expect(standings.length).toBe(8);
+    for (const row of finalTable) {
+      const entry = standings.find((s) => s.clubId === row.clubId)!;
+      expect(entry.points).toBe(row.points);
+      expect(entry.goalsFor).toBe(row.goalsFor);
+    }
+  });
+
+  it("standingsAfter er progressiv: point stiger monotont for alle klubber", () => {
+    const world = createWorld(71);
+    const report = runSeason(world);
+    const prev = new Map<string, number>();
+    for (let r = 1; r <= 14; r++) {
+      for (const entry of standingsAfter(report.rounds, r)) {
+        expect(entry.points).toBeGreaterThanOrEqual(prev.get(entry.clubId) ?? 0);
+        prev.set(entry.clubId, entry.points);
+      }
+    }
   });
 });
 

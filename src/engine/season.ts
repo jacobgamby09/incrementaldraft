@@ -13,6 +13,7 @@ import type {
   Club,
   DevelopmentOutcome,
   DraftState,
+  FeedMatch,
   FinalizeReport,
   PlayerMatchResult,
   Position,
@@ -69,6 +70,7 @@ export function runSeason(world: World): SeasonReport {
   const tables: TableRow[][] = [];
   const playerDivIdx = playerDivisionIndex(world);
   const playerResults: PlayerMatchResult[] = [];
+  const feedRounds: FeedMatch[][] = [];
   let playerGoals = 0;
   let playerWins = 0;
   let playerDraws = 0;
@@ -93,17 +95,36 @@ export function runSeason(world: World): SeasonReport {
         club,
         xi,
         xpMult: {} as Record<string, number>,
-        team: { lines: teamLines(xi), scorers: undefined as ReturnType<typeof scorerCandidates> | undefined },
+        // I spillerens division får AI-klubber navngivne scorere (feedet viser dem)
+        team: {
+          lines: teamLines(xi),
+          scorers: d === playerDivIdx ? scorerCandidates(xi) : undefined,
+        },
       };
     });
 
     const fixtures = makeFixtures(CLUBS_PER_DIVISION);
     fixtures.forEach((round, roundIndex) => {
+      const feedRound: FeedMatch[] = [];
       for (const [h, a] of round) {
         const home = lineups[h];
         const away = lineups[a];
         const result = simulateMatch(home.team, away.team, world.rng);
         const [gh, ga] = result.score;
+        const isPlayerMatch = home.club.isPlayer || away.club.isPlayer;
+
+        if (d === playerDivIdx) {
+          feedRound.push({
+            round: roundIndex + 1,
+            homeId: home.club.id,
+            homeName: home.club.name,
+            awayId: away.club.id,
+            awayName: away.club.name,
+            score: [gh, ga],
+            isPlayerMatch,
+            events: isPlayerMatch ? result.events : undefined,
+          });
+        }
 
         const rowH = rows.get(home.club.id)!;
         const rowA = rows.get(away.club.id)!;
@@ -144,6 +165,7 @@ export function runSeason(world: World): SeasonReport {
           else if (gf === against) playerDraws++;
         }
       }
+      if (d === playerDivIdx) feedRounds.push(feedRound);
     });
 
     tables.push(sortTable([...rows.values()]));
@@ -252,6 +274,7 @@ export function runSeason(world: World): SeasonReport {
     playerDivisionIndex: playerDivIdx,
     playerPosition: position,
     playerResults,
+    rounds: feedRounds,
     income,
     harvest: harvest.sort((a, b) => b.ovrAfter - a.ovrAfter),
     retirements,
@@ -261,6 +284,46 @@ export function runSeason(world: World): SeasonReport {
 }
 
 const PLAYER_IMMUNITY_TEXT = "FC Dynasti undgår nedrykning (næstdårligste rykker ned)";
+
+export interface StandingEntry {
+  clubId: string;
+  name: string;
+  points: number;
+  goalsFor: number;
+  goalsAgainst: number;
+}
+
+/** Løbende stilling efter de første `upToRound` runder af feedet (sorteret). */
+export function standingsAfter(rounds: FeedMatch[][], upToRound: number): StandingEntry[] {
+  const byId = new Map<string, StandingEntry>();
+  const ensure = (id: string, name: string): StandingEntry => {
+    if (!byId.has(id)) byId.set(id, { clubId: id, name, points: 0, goalsFor: 0, goalsAgainst: 0 });
+    return byId.get(id)!;
+  };
+  for (const round of rounds.slice(0, upToRound)) {
+    for (const m of round) {
+      const home = ensure(m.homeId, m.homeName);
+      const away = ensure(m.awayId, m.awayName);
+      const [gh, ga] = m.score;
+      home.goalsFor += gh;
+      home.goalsAgainst += ga;
+      away.goalsFor += ga;
+      away.goalsAgainst += gh;
+      if (gh > ga) home.points += 3;
+      else if (gh < ga) away.points += 3;
+      else {
+        home.points += 1;
+        away.points += 1;
+      }
+    }
+  }
+  return [...byId.values()].sort(
+    (a, b) =>
+      b.points - a.points ||
+      b.goalsFor - b.goalsAgainst - (a.goalsFor - a.goalsAgainst) ||
+      b.goalsFor - a.goalsFor,
+  );
+}
 
 /** Start alle drafts: AI-divisioner afvikles øjeblikkeligt; spillerens division
  *  returneres som interaktiv DraftState. */

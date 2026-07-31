@@ -2,6 +2,7 @@ import { DndContext, useDroppable, type DragEndEvent, type DragOverEvent, type D
 import { useMemo, useState } from "react";
 import {
   evaluate,
+  overallFromLines,
   previewPlacement,
   resolveAssignment,
   SLOT_BY_ID,
@@ -168,6 +169,14 @@ export function FormationScreen() {
         <div style={{ width: 330, display: "flex", flexDirection: "column", gap: 14 }}>
           <div className="md-panel">
             <div className="md-title">Holdstyrke</div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 12 }}>
+              <span style={{ fontSize: 42, fontWeight: 800, lineHeight: 1 }}>
+                <AnimatedNumber value={overallFromLines(preview ? preview.lines : evaluation.lines)} />
+              </span>
+              <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.6, color: "var(--text-dim)" }}>
+                OVERALL · liga-snit {overallFromLines(leagueAvg)}
+              </span>
+            </div>
             <StatRow label="ANGREB" value={evaluation.lines.attack} ghost={preview?.lines.attack} max={max} note={`Liga-snit: ${Math.round(leagueAvg.attack)}`} />
             <StatRow label="MIDTBANE" value={evaluation.lines.midfield} ghost={preview?.lines.midfield} max={max} note={`Liga-snit: ${Math.round(leagueAvg.midfield)}`} />
             <StatRow label="FORSVAR" value={evaluation.lines.defense} ghost={preview?.lines.defense} max={max} note={`Liga-snit: ${Math.round(leagueAvg.defense)}`} />

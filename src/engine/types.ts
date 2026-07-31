@@ -135,12 +135,27 @@ export interface PlayerMatchResult {
   home: boolean;
 }
 
+/** Én kamp i sæson-feedet (spillerens division). Events gemmes kun for
+ *  spillerens egne kampe — resten bruges til løbende stilling. */
+export interface FeedMatch {
+  round: number;
+  homeId: string;
+  homeName: string;
+  awayId: string;
+  awayName: string;
+  score: [number, number];
+  isPlayerMatch: boolean;
+  events?: MatchEvent[];
+}
+
 export interface SeasonReport {
   season: number;
   tables: TableRow[][];
   playerDivisionIndex: number;
   playerPosition: number;
   playerResults: PlayerMatchResult[];
+  /** 14 runder × 4 kampe fra spillerens division — sæson-feedets råstof */
+  rounds: FeedMatch[][];
   income: { goals: number; wins: number; draws: number; prize: number; total: number };
   harvest: DevelopmentOutcome[];
   retirements: string[];

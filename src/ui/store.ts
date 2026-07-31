@@ -5,7 +5,7 @@ import { finalizeSeason, runSeason, startDrafts } from "../engine/season";
 import type { DraftState, FinalizeReport, SeasonReport, World } from "../engine/types";
 import { createWorld, playerClub, playerDivisionIndex } from "../engine/world";
 
-export type Phase = "ready" | "harvest" | "draft" | "draft-done";
+export type Phase = "ready" | "feed" | "harvest" | "draft" | "draft-done";
 
 interface GameState {
   version: number;
@@ -17,6 +17,7 @@ interface GameState {
 
   newWorld(seed: number): void;
   playSeason(): void;
+  toHarvest(): void;
   goToDraft(): void;
   pick(prospectId: string): void;
   finishSeason(): void;
@@ -39,7 +40,11 @@ export const useGame = create<GameState>((set, get) => ({
   playSeason: () => {
     const { world, version } = get();
     const report = runSeason(world);
-    set({ report, phase: "harvest", version: version + 1 });
+    set({ report, phase: "feed", version: version + 1 });
+  },
+
+  toHarvest: () => {
+    set({ phase: "harvest", version: get().version + 1 });
   },
 
   goToDraft: () => {

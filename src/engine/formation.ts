@@ -346,4 +346,15 @@ export function previewPlacement(
   };
 }
 
+/** Holdets OVERALL: linjernes sum normaliseret med den samlede vægt-masse,
+ *  så tallet lander på samme 0-99-skala som spiller-OVR. */
+const TOTAL_WEIGHT = SLOTS_442.reduce(
+  (sum, s) => sum + s.weights.attack + s.weights.midfield + s.weights.defense,
+  0,
+);
+
+export function overallFromLines(lines: TeamLines): number {
+  return Math.round((lines.attack + lines.midfield + lines.defense) / TOTAL_WEIGHT);
+}
+
 export { SLOT_BY_ID };

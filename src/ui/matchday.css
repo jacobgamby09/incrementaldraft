@@ -177,3 +177,43 @@ body {
 .preview-box { border-left: 3px solid var(--accent); }
 .preview-box .pv { font-size: 13px; line-height: 1.55; }
 .preview-box b { color: var(--accent); }
+
+/* ---- sæson-feed ---- */
+.feed-card {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-left-width: 3px;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+}
+.feed-card.w { border-left-color: var(--accent); background: rgba(163, 230, 53, 0.06); }
+.feed-card.l { border-left-color: var(--danger); background: rgba(248, 113, 113, 0.06); }
+.feed-card.d { border-left-color: var(--gold); }
+.feed-card-top { display: flex; align-items: center; gap: 10px; }
+.feed-gw { color: var(--text-dim); font-size: 11px; font-weight: 800; width: 30px; }
+.feed-badge {
+  font-size: 10px; font-weight: 800; width: 18px; height: 18px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center; color: #0b1220;
+}
+.feed-badge.w { background: var(--accent); }
+.feed-badge.l { background: var(--danger); }
+.feed-badge.d { background: var(--gold); }
+.feed-opp { font-size: 14px; font-weight: 700; }
+.feed-ha { color: var(--text-dim); font-size: 11px; font-weight: 600; }
+.feed-score { margin-left: auto; font-size: 17px; font-weight: 800; }
+.feed-score.w { color: var(--accent); }
+.feed-score.l { color: var(--danger); }
+.feed-score.d { color: var(--gold); }
+.feed-scorers { color: var(--text-dim); font-size: 11.5px; margin-top: 5px; padding-left: 40px; }
+.feed-events {
+  margin-top: 10px; padding: 10px 12px; border-top: 1px solid var(--panel-border);
+  font-family: Consolas, monospace; font-size: 12px; line-height: 1.8; color: var(--text-dim);
+}
+.feed-tally { display: flex; justify-content: space-between; text-align: center; }
+.feed-tally b { display: block; font-size: 24px; }
+.feed-tally span { font-size: 9px; letter-spacing: 1px; color: var(--text-dim); font-weight: 800; }
+.feed-tally .pos { color: var(--accent); }
+.feed-tally .neg { color: var(--danger); }
